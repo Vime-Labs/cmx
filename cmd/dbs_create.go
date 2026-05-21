@@ -24,13 +24,26 @@ var dbsCreateCmd = &cobra.Command{
 func runDBsCreate(cmd *cobra.Command, args []string) error {
 	client := mustClient()
 
-	// ── 1. Projeto ────────────────────────────────────────────────────────────
+	// ── pré-carrega recursos ──────────────────────────────────────────────────
+	spin := ui.NewSpinner("Buscando recursos do Coolify")
 	projects, err := client.ListProjects()
 	if err != nil {
+		spin.Fail("falhou")
 		return fmt.Errorf("buscando projetos: %w", err)
 	}
+	servers, err := client.ListServers()
+	if err != nil {
+		spin.Fail("falhou")
+		return fmt.Errorf("buscando servidores: %w", err)
+	}
+	spin.Stop("Pronto")
+	fmt.Println()
+
 	if len(projects) == 0 {
 		return fmt.Errorf("nenhum projeto encontrado — crie um projeto no painel Coolify primeiro")
+	}
+	if len(servers) == 0 {
+		return fmt.Errorf("nenhum servidor encontrado — adicione um servidor no painel Coolify primeiro")
 	}
 	projNames := make([]string, len(projects))
 	for i, p := range projects {
@@ -61,13 +74,6 @@ func runDBsCreate(cmd *cobra.Command, args []string) error {
 	environment := proj.Environments[envIdx]
 
 	// ── 3. Servidor ───────────────────────────────────────────────────────────
-	servers, err := client.ListServers()
-	if err != nil {
-		return fmt.Errorf("buscando servidores: %w", err)
-	}
-	if len(servers) == 0 {
-		return fmt.Errorf("nenhum servidor encontrado — adicione um servidor no painel Coolify primeiro")
-	}
 	srvNames := make([]string, len(servers))
 	for i, s := range servers {
 		srvNames[i] = fmt.Sprintf("%s (%s)", s.Name, s.IP)

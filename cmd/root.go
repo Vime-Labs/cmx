@@ -4,19 +4,23 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/spf13/cobra"
 	"github.com/Vime-Labs/cmx/internal/api"
 	"github.com/Vime-Labs/cmx/internal/config"
+	"github.com/Vime-Labs/cmx/internal/ui"
+	"github.com/spf13/cobra"
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "cmx",
-	Short: "Vime Labs — Cloud Management CLI",
-	Long:  "CMX gerencia aplicações e bancos de dados nos servidores Vime via Coolify.",
+	Use:          "cmx",
+	Short:        "Vime Labs — Cloud Management CLI",
+	Long:         "CMX gerencia aplicações e bancos de dados nos servidores Vime.",
+	SilenceUsage: true, // não imprime usage em erros de runtime
 }
 
 func Execute() {
+	rootCmd.SilenceErrors = true
 	if err := rootCmd.Execute(); err != nil {
+		ui.Fail(err.Error())
 		os.Exit(1)
 	}
 }

@@ -3,9 +3,12 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"strings"
 	"text/tabwriter"
+	"time"
 
 	"github.com/spf13/cobra"
+	"github.com/Vime-Labs/cmx/internal/ui"
 )
 
 var appsCmd = &cobra.Command{
@@ -20,19 +23,24 @@ var appsListCmd = &cobra.Command{
 	Short: "Lista todas as aplicações",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		client := mustClient()
+		spin := ui.NewSpinner("Buscando aplicações")
 		apps, err := client.ListApps()
 		if err != nil {
+			spin.Fail("falhou")
 			return err
 		}
+		spin.Stop(fmt.Sprintf("%d aplicação(ões) encontrada(s)", len(apps)))
+
 		if len(apps) == 0 {
-			fmt.Println("Nenhuma aplicação encontrada.")
 			return nil
 		}
+		fmt.Println()
 		w := tabwriter.NewWriter(os.Stdout, 0, 0, 3, ' ', 0)
-		fmt.Fprintln(w, "UUID\tNOME\tSTATUS\tREPO\tBRANCH")
+		fmt.Fprintln(w, ui.Bold("UUID\tNOME\tSTATUS\tREPO\tBRANCH"))
 		for _, a := range apps {
 			fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\n",
-				a.UUID, a.Name, a.Status, a.Repository, a.Branch)
+				ui.Gray(a.UUID), a.Name, ui.StatusColor(a.Status),
+				a.Repository, ui.Gray(a.Branch))
 		}
 		return w.Flush()
 	},
@@ -46,27 +54,35 @@ var appsGetCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		client := mustClient()
+		spin := ui.NewSpinner("Buscando")
 		app, err := client.GetApp(args[0])
 		if err != nil {
+			spin.Fail("falhou")
 			return err
 		}
+		spin.Stop(app.Name)
+		fmt.Println()
+
 		w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
-		fmt.Fprintf(w, "UUID:\t%s\n", app.UUID)
-		fmt.Fprintf(w, "Nome:\t%s\n", app.Name)
-		fmt.Fprintf(w, "Status:\t%s\n", app.Status)
-		fmt.Fprintf(w, "Repo:\t%s\n", app.Repository)
-		fmt.Fprintf(w, "Branch:\t%s\n", app.Branch)
-		fmt.Fprintf(w, "Build pack:\t%s\n", app.BuildPack)
-		fmt.Fprintf(w, "Domínios:\t%s\n", app.Domains)
-		fmt.Fprintf(w, "Criado em:\t%s\n", app.CreatedAt)
-		fmt.Fprintf(w, "Atualizado:\t%s\n", app.UpdatedAt)
+		fmt.Fprintf(w, "%s\t%s\n", ui.Bold("UUID:"), app.UUID)
+		fmt.Fprintf(w, "%s\t%s\n", ui.Bold("Nome:"), app.Name)
+		fmt.Fprintf(w, "%s\t%s\n", ui.Bold("Status:"), ui.StatusColor(app.Status))
+		fmt.Fprintf(w, "%s\t%s\n", ui.Bold("Repo:"), app.Repository)
+		fmt.Fprintf(w, "%s\t%s\n", ui.Bold("Branch:"), app.Branch)
+		fmt.Fprintf(w, "%s\t%s\n", ui.Bold("Build pack:"), app.BuildPack)
+		fmt.Fprintf(w, "%s\t%s\n", ui.Bold("Domínios:"), app.Domains)
+		fmt.Fprintf(w, "%s\t%s\n", ui.Bold("Criado em:"), app.CreatedAt)
+		fmt.Fprintf(w, "%s\t%s\n", ui.Bold("Atualizado:"), app.UpdatedAt)
 		return w.Flush()
 	},
 }
 
 // ── logs ────────────────────────────────────────────────────────────────────
 
-var logsLines int
+var (
+	logsLines  int
+	logsFollow bool
+)
 
 var appsLogsCmd = &cobra.Command{
 	Use:   "logs <uuid|nome>",
@@ -74,18 +90,67 @@ var appsLogsCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		client := mustClient()
-		logs, err := client.AppLogs(args[0], logsLines)
-		if err != nil {
-			return err
+
+		if !logsFollow {
+			spin := ui.NewSpinner("Buscando logs")
+			logs, err := client.AppLogs(args[0], logsLines)
+			if err != nil {
+				spin.Fail("falhou")
+				return err
+			}
+			spin.Stop("OK")
+			fmt.Println()
+			fmt.Print(logs)
+			return nil
 		}
-		fmt.Print(logs)
-		return nil
+
+		// modo follow: poll a cada 2s, imprime apenas linhas novas
+		ui.Info(fmt.Sprintf("Seguindo logs de %q (Ctrl+C para sair)", args[0]))
+		fmt.Println()
+		var seen string
+		for {
+			logs, err := client.AppLogs(args[0], 200)
+			if err != nil {
+				ui.Fail(fmt.Sprintf("erro ao buscar logs: %v", err))
+			} else {
+				newContent := diffLogs(seen, logs)
+				if newContent != "" {
+					fmt.Print(newContent)
+					seen = logs
+				}
+			}
+			time.Sleep(2 * time.Second)
+		}
 	},
 }
 
-// ── deploy ───────────────────────────────────────────────────────────────────
+// diffLogs retorna as linhas de novo que não estavam em prev.
+func diffLogs(prev, curr string) string {
+	if prev == "" {
+		return curr
+	}
+	if !strings.HasSuffix(prev, "\n") {
+		prev += "\n"
+	}
+	idx := strings.LastIndex(curr, strings.TrimSuffix(prev[max(0, len(prev)-200):], "\n"))
+	if idx < 0 {
+		return curr
+	}
+	tail := curr[idx+len(prev)-1:]
+	if tail == "\n" || tail == "" {
+		return ""
+	}
+	return tail
+}
 
-var deployForce bool
+func max(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
+}
+
+// ── deploy ───────────────────────────────────────────────────────────────────
 
 var appsDeployCmd = &cobra.Command{
 	Use:   "deploy <uuid|nome>",
@@ -93,12 +158,16 @@ var appsDeployCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		client := mustClient()
-		resp, err := client.DeployApp(args[0], deployForce)
+		force, _ := cmd.Flags().GetBool("force")
+		spin := ui.NewSpinner(fmt.Sprintf("Disparando deploy para %q", args[0]))
+		resp, err := client.DeployApp(args[0], force)
 		if err != nil {
+			spin.Fail("falhou")
 			return err
 		}
+		spin.Stop("Deploy enfileirado")
 		for _, d := range resp.Deployments {
-			fmt.Printf("Deploy enfileirado: %s\n", d.DeploymentUUID)
+			ui.Info(fmt.Sprintf("deployment: %s", d.DeploymentUUID))
 		}
 		return nil
 	},
@@ -110,26 +179,27 @@ var appsStartCmd = &cobra.Command{
 	Use:   "start <uuid|nome>",
 	Short: "Inicia uma aplicação",
 	Args:  cobra.ExactArgs(1),
-	RunE:  appActionCmd("start"),
+	RunE:  appActionCmd("start", "Iniciando"),
 }
 
 var appsStopCmd = &cobra.Command{
 	Use:   "stop <uuid|nome>",
 	Short: "Para uma aplicação",
 	Args:  cobra.ExactArgs(1),
-	RunE:  appActionCmd("stop"),
+	RunE:  appActionCmd("stop", "Parando"),
 }
 
 var appsRestartCmd = &cobra.Command{
 	Use:   "restart <uuid|nome>",
 	Short: "Reinicia uma aplicação",
 	Args:  cobra.ExactArgs(1),
-	RunE:  appActionCmd("restart"),
+	RunE:  appActionCmd("restart", "Reiniciando"),
 }
 
-func appActionCmd(action string) func(*cobra.Command, []string) error {
+func appActionCmd(action, spinMsg string) func(*cobra.Command, []string) error {
 	return func(cmd *cobra.Command, args []string) error {
 		client := mustClient()
+		spin := ui.NewSpinner(fmt.Sprintf("%s %q", spinMsg, args[0]))
 		var msg string
 		var err error
 		switch action {
@@ -141,16 +211,18 @@ func appActionCmd(action string) func(*cobra.Command, []string) error {
 			msg, err = client.RestartApp(args[0])
 		}
 		if err != nil {
+			spin.Fail("falhou")
 			return err
 		}
-		fmt.Println(msg)
+		spin.Stop(msg)
 		return nil
 	}
 }
 
 func init() {
 	appsLogsCmd.Flags().IntVarP(&logsLines, "lines", "n", 100, "Número de linhas")
-	appsDeployCmd.Flags().BoolVarP(&deployForce, "force", "f", false, "Força rebuild sem cache")
+	appsLogsCmd.Flags().BoolVarP(&logsFollow, "follow", "f", false, "Acompanha logs em tempo real (poll 2s)")
+	appsDeployCmd.Flags().Bool("force", false, "Força rebuild sem cache")
 
 	appsCmd.AddCommand(appsListCmd, appsGetCmd, appsLogsCmd, appsDeployCmd,
 		appsStartCmd, appsStopCmd, appsRestartCmd)

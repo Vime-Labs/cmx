@@ -74,7 +74,15 @@ func (c *Client) DeployApp(id string, force bool) (*DeployResponse, error) {
 	if err != nil {
 		return nil, err
 	}
-	path := fmt.Sprintf("/deploy?uuid=%s", uuid)
+	return c.deployByQuery(fmt.Sprintf("uuid=%s", uuid), force)
+}
+
+func (c *Client) DeployByTag(tag string, force bool) (*DeployResponse, error) {
+	return c.deployByQuery(fmt.Sprintf("tag=%s", tag), force)
+}
+
+func (c *Client) deployByQuery(query string, force bool) (*DeployResponse, error) {
+	path := "/deploy?" + query
 	if force {
 		path += "&force=true"
 	}
