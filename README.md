@@ -15,14 +15,9 @@ gh release download --repo Vime-Labs/cmx \
   && sudo mv /tmp/cmx /usr/local/bin/cmx
 ```
 
-**Windows (PowerShell)**
+**Windows (PowerShell)** — copie a linha inteira abaixo e cole no PowerShell:
 ```powershell
-$dir = "$env:USERPROFILE\.cmx\bin"
-New-Item -Force -ItemType Directory $dir | Out-Null
-gh release download --repo Vime-Labs/cmx --pattern cmx-windows-amd64.exe --output "$dir\cmx.exe" --clobber
-$p = [Environment]::GetEnvironmentVariable("PATH", "User")
-if ($p -notlike "*$dir*") { [Environment]::SetEnvironmentVariable("PATH", "$p;$dir", "User") }
-$env:PATH += ";$dir"
+$dir="$env:USERPROFILE\.cmx\bin"; New-Item -Force -ItemType Directory $dir | Out-Null; gh release download --repo Vime-Labs/cmx --pattern cmx-windows-amd64.exe --output "$dir\cmx.exe" --clobber; $p=[Environment]::GetEnvironmentVariable("PATH","User"); if ($p -notlike "*$dir*") { [Environment]::SetEnvironmentVariable("PATH","$p;$dir","User") }; $env:PATH+=";$dir"
 ```
 
 Após a instalação no Windows, reinicie o terminal para o PATH atualizar.
