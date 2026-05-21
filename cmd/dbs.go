@@ -2,12 +2,10 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 	"strconv"
-	"text/tabwriter"
 
-	"github.com/spf13/cobra"
 	"github.com/Vime-Labs/cmx/internal/ui"
+	"github.com/spf13/cobra"
 )
 
 var dbsCmd = &cobra.Command{
@@ -34,18 +32,23 @@ var dbsListCmd = &cobra.Command{
 			return nil
 		}
 		fmt.Println()
-		w := tabwriter.NewWriter(os.Stdout, 0, 0, 3, ' ', 0)
-		fmt.Fprintln(w, ui.Bold("UUID\tNOME\tTIPO\tIMAGEM\tSTATUS\tPÚBLICO"))
+		t := ui.NewTable("UUID", "NOME", "TIPO", "IMAGEM", "STATUS", "PÚBLICO")
 		for _, d := range dbs {
 			public := ui.Gray("—")
 			if d.IsPublic {
 				public = strconv.Itoa(d.PublicPort)
 			}
-			fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\n",
-				ui.Gray(d.UUID), d.Name, ui.Cyan(d.Type),
-				ui.Gray(d.Image), ui.StatusColor(d.Status), public)
+			t.AddRow(
+				ui.Gray(ui.ShortID(d.UUID)),
+				ui.Truncate(d.Name, 25),
+				ui.Cyan(d.DisplayType()),
+				ui.Gray(d.Image),
+				ui.StatusColor(d.Status),
+				public,
+			)
 		}
-		return w.Flush()
+		t.Render()
+		return nil
 	},
 }
 
@@ -70,16 +73,17 @@ var dbsGetCmd = &cobra.Command{
 		if db.IsPublic {
 			public = fmt.Sprintf("sim (porta %d)", db.PublicPort)
 		}
-		w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
-		fmt.Fprintf(w, "%s\t%s\n", ui.Bold("UUID:"), db.UUID)
-		fmt.Fprintf(w, "%s\t%s\n", ui.Bold("Nome:"), db.Name)
-		fmt.Fprintf(w, "%s\t%s\n", ui.Bold("Tipo:"), ui.Cyan(db.Type))
-		fmt.Fprintf(w, "%s\t%s\n", ui.Bold("Imagem:"), db.Image)
-		fmt.Fprintf(w, "%s\t%s\n", ui.Bold("Status:"), ui.StatusColor(db.Status))
-		fmt.Fprintf(w, "%s\t%s\n", ui.Bold("Público:"), public)
-		fmt.Fprintf(w, "%s\t%s\n", ui.Bold("Criado em:"), db.CreatedAt)
-		fmt.Fprintf(w, "%s\t%s\n", ui.Bold("Atualizado:"), db.UpdatedAt)
-		return w.Flush()
+		kv := ui.NewTable("", "")
+		kv.AddRow(ui.Bold("UUID:"), db.UUID)
+		kv.AddRow(ui.Bold("Nome:"), db.Name)
+		kv.AddRow(ui.Bold("Tipo:"), ui.Cyan(db.DisplayType()))
+		kv.AddRow(ui.Bold("Imagem:"), db.Image)
+		kv.AddRow(ui.Bold("Status:"), ui.StatusColor(db.Status))
+		kv.AddRow(ui.Bold("Público:"), public)
+		kv.AddRow(ui.Bold("Criado em:"), db.CreatedAt)
+		kv.AddRow(ui.Bold("Atualizado:"), db.UpdatedAt)
+		kv.Render()
+		return nil
 	},
 }
 

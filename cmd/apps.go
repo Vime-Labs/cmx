@@ -2,13 +2,11 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 	"strings"
-	"text/tabwriter"
 	"time"
 
-	"github.com/spf13/cobra"
 	"github.com/Vime-Labs/cmx/internal/ui"
+	"github.com/spf13/cobra"
 )
 
 var appsCmd = &cobra.Command{
@@ -35,14 +33,18 @@ var appsListCmd = &cobra.Command{
 			return nil
 		}
 		fmt.Println()
-		w := tabwriter.NewWriter(os.Stdout, 0, 0, 3, ' ', 0)
-		fmt.Fprintln(w, ui.Bold("UUID\tNOME\tSTATUS\tREPO\tBRANCH"))
+		t := ui.NewTable("UUID", "NOME", "STATUS", "REPO", "BRANCH")
 		for _, a := range apps {
-			fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\n",
-				ui.Gray(a.UUID), a.Name, ui.StatusColor(a.Status),
-				a.Repository, ui.Gray(a.Branch))
+			t.AddRow(
+				ui.Gray(ui.ShortID(a.UUID)),
+				ui.Truncate(a.Name, 30),
+				ui.StatusColor(a.Status),
+				ui.Truncate(a.Repository, 35),
+				ui.Gray(a.Branch),
+			)
 		}
-		return w.Flush()
+		t.Render()
+		return nil
 	},
 }
 
@@ -63,17 +65,18 @@ var appsGetCmd = &cobra.Command{
 		spin.Stop(app.Name)
 		fmt.Println()
 
-		w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
-		fmt.Fprintf(w, "%s\t%s\n", ui.Bold("UUID:"), app.UUID)
-		fmt.Fprintf(w, "%s\t%s\n", ui.Bold("Nome:"), app.Name)
-		fmt.Fprintf(w, "%s\t%s\n", ui.Bold("Status:"), ui.StatusColor(app.Status))
-		fmt.Fprintf(w, "%s\t%s\n", ui.Bold("Repo:"), app.Repository)
-		fmt.Fprintf(w, "%s\t%s\n", ui.Bold("Branch:"), app.Branch)
-		fmt.Fprintf(w, "%s\t%s\n", ui.Bold("Build pack:"), app.BuildPack)
-		fmt.Fprintf(w, "%s\t%s\n", ui.Bold("Domínios:"), app.Domains)
-		fmt.Fprintf(w, "%s\t%s\n", ui.Bold("Criado em:"), app.CreatedAt)
-		fmt.Fprintf(w, "%s\t%s\n", ui.Bold("Atualizado:"), app.UpdatedAt)
-		return w.Flush()
+		kv := ui.NewTable("", "")
+		kv.AddRow(ui.Bold("UUID:"), app.UUID)
+		kv.AddRow(ui.Bold("Nome:"), app.Name)
+		kv.AddRow(ui.Bold("Status:"), ui.StatusColor(app.Status))
+		kv.AddRow(ui.Bold("Repo:"), app.Repository)
+		kv.AddRow(ui.Bold("Branch:"), app.Branch)
+		kv.AddRow(ui.Bold("Build pack:"), app.BuildPack)
+		kv.AddRow(ui.Bold("Domínios:"), app.Domains)
+		kv.AddRow(ui.Bold("Criado em:"), app.CreatedAt)
+		kv.AddRow(ui.Bold("Atualizado:"), app.UpdatedAt)
+		kv.Render()
+		return nil
 	},
 }
 

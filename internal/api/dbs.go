@@ -11,12 +11,33 @@ type Database struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
 	Status      string `json:"status"`
-	Type        string `json:"type"`
+	Type        string `json:"type"`         // ex: "standalone-postgresql"
 	Image       string `json:"image"`
 	IsPublic    bool   `json:"is_public"`
 	PublicPort  int    `json:"public_port"`
 	CreatedAt   string `json:"created_at"`
 	UpdatedAt   string `json:"updated_at"`
+}
+
+// DisplayType normaliza o tipo retornado pela API para exibição.
+// A API retorna "standalone-postgresql", "standalone-redis", etc.
+// Se vazio, deriva da imagem Docker.
+func (d *Database) DisplayType() string {
+	t := strings.TrimPrefix(d.Type, "standalone-")
+	if t != "" && t != d.Type {
+		return t
+	}
+	// fallback: deriva da imagem
+	img := strings.ToLower(d.Image)
+	for _, candidate := range []string{"postgres", "mysql", "mariadb", "mongo", "redis", "dragonfly", "keydb", "clickhouse"} {
+		if strings.HasPrefix(img, candidate) {
+			return candidate
+		}
+	}
+	if t != "" {
+		return t
+	}
+	return "—"
 }
 
 func (c *Client) ListDBs() ([]Database, error) {
