@@ -19,9 +19,10 @@ var appsEnvsCmd = &cobra.Command{
 // ── list ────────────────────────────────────────────────────────────────────
 
 var appsEnvsListCmd = &cobra.Command{
-	Use:   "list <uuid|nome>",
-	Short: "Lista variáveis de ambiente",
-	Args:  cobra.ExactArgs(1),
+	Use:               "list <uuid|nome>",
+	Short:             "Lista variáveis de ambiente",
+	Args:              cobra.ExactArgs(1),
+	ValidArgsFunction: completeApps,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		client := mustClient()
 		spin := ui.NewSpinner("Buscando variáveis")
@@ -61,7 +62,8 @@ var appsEnvsSetCmd = &cobra.Command{
 Exemplos:
   cmx apps envs set meu-app DATABASE_URL=postgres://...
   cmx apps envs set meu-app NODE_ENV production`,
-	Args: cobra.RangeArgs(2, 3),
+	Args:              cobra.RangeArgs(2, 3),
+	ValidArgsFunction: completeApps,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		appID := args[0]
 		key, value, err := validate.KeyValue(args[1:])
@@ -86,9 +88,10 @@ Exemplos:
 // ── delete ───────────────────────────────────────────────────────────────────
 
 var appsEnvsDeleteCmd = &cobra.Command{
-	Use:   "delete <uuid|nome> KEY",
-	Short: "Remove uma variável de ambiente",
-	Args:  cobra.ExactArgs(2),
+	Use:               "delete <uuid|nome> KEY",
+	Short:             "Remove uma variável de ambiente",
+	Args:              cobra.ExactArgs(2),
+	ValidArgsFunction: completeApps,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		appID, key := args[0], args[1]
 

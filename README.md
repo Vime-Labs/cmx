@@ -49,6 +49,7 @@ cmx apps list                        # lista todas as aplicações
 cmx apps get <uuid|nome>             # detalhes de uma aplicação
 cmx apps deploy <uuid|nome>          # dispara deploy
 cmx apps deploy <uuid|nome> --force  # deploy sem cache
+cmx apps deploy <uuid|nome> --wait   # deploy bloqueante (acompanha até concluir)
 cmx apps logs <uuid|nome>            # últimas 100 linhas de log
 cmx apps logs <uuid|nome> -n 200     # N linhas de log
 cmx apps logs <uuid|nome> --follow   # acompanha logs em tempo real
@@ -76,14 +77,25 @@ cmx dbs start <uuid|nome>
 cmx dbs stop <uuid|nome>
 cmx dbs restart <uuid|nome>
 cmx dbs create                       # wizard interativo
+cmx dbs backup <uuid|nome>           # dispara backup
+```
+
+### Domínios
+
+```sh
+cmx domain list <app-id>             # lista domínios de uma app
+cmx domain add <app-id> <domínio>    # adiciona domínio
+cmx domain remove <app-id> <uuid>    # remove domínio
 ```
 
 ### Deployments
 
 ```sh
 cmx deploy <uuid|nome>               # deploy por nome ou UUID
+cmx deploy <uuid|nome> --force       # deploy sem cache
+cmx deploy <uuid|nome> --wait        # deploy bloqueante (acompanha até concluir)
 cmx deploy --tag production          # deploy de todos com a tag
-cmx deploy <uuid|nome> --force
+cmx deploy --tag production --wait   # deploy bloqueante por tag
 
 cmx deployments list                 # deployments em andamento
 cmx deployments get <uuid>           # detalhes de um deployment
@@ -91,32 +103,72 @@ cmx deployments history <uuid|nome>  # histórico da aplicação
 cmx deployments cancel <uuid>        # cancela deployment ativo
 ```
 
-### Outros
+### Configuração
 
 ```sh
-cmx version
-cmx configure
-cmx log            # histórico de atividade local
-cmx log -n 50      # últimas 50 ações
-cmx log --cmd deploy  # filtrar por comando
-cmx log --clear    # apagar o histórico
+cmx configure                        # wizard interativo
+cmx config get                       # exibe config atual
+cmx config get url                   # exibe apenas a URL
+cmx config get token                 # exibe apenas o token
+cmx config set url <url>             # atualiza a URL
+cmx config set token <token>         # atualiza o token
+```
+
+### Túnel SSH
+
+```sh
+cmx tunnel <app|db> <local:remoto>   # gera comando SSH para túnel
+cmx tunnel meu-app 3306:3306
+cmx tunnel --user ubuntu meu-app 3000:3000
+```
+
+### Status / Dashboard
+
+```sh
+cmx status                           # visão geral do ambiente
 ```
 
 ### Histórico de atividade
 
-Toda ação executada pela CLI (criar recurso, deploy, start/stop, etc.) é registrada
-localmente em `~/.cmx/activity.log` no formato JSONL.
+```sh
+cmx log                              # últimas 20 ações
+cmx log -n 50                        # últimas 50 ações
+cmx log --cmd deploy                 # filtrar por comando
+cmx log --clear                      # apagar o histórico
+```
 
-Use `cmx log` para consultar o histórico de forma legível, agrupado por dia,
+Toda ação executada pela CLI (criar recurso, deploy, start/stop, etc.) é registrada
+localmente em `~/.cmx/activity.log` no formato JSONL, agrupado por dia,
 com status (✓/✗), duração e detalhes.
 
 Não é telemetria — nada é enviado para fora da sua máquina.
+
+### Autocomplete para o shell
+
+```sh
+cmx completion bash                  # bash
+cmx completion zsh                   # zsh
+cmx completion fish                  # fish
+cmx completion powershell            # PowerShell
+```
+
+Para ativar no shell atual:
+
+```sh
+source <(cmx completion bash)        # bash
+eval "$(cmx completion zsh)"         # zsh
+cmx completion fish | source         # fish
+```
+
+Após ativar, use **Tab** para autocompletar nomes de apps, bancos e comandos.
 
 ## Dicas
 
 - Todos os comandos aceitam **nome ou UUID**. Se o nome for ambíguo, o CMX lista as opções e pede o UUID.
 - `NO_COLOR=1` desativa as cores (útil em logs de CI).
-- O fluxo típico de um deploy: `cmx apps deploy meu-app` → `cmx deployments history meu-app` → `cmx apps logs meu-app --follow`.
+O fluxo típico de um deploy: `cmx apps deploy meu-app --wait` → `cmx status`.
+
+Use **Tab** para autocompletar nomes de apps e bancos de dados (requer `cmx completion <shell>`).
 
 ## Desenvolvimento
 

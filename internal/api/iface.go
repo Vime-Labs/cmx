@@ -36,6 +36,14 @@ type API interface {
 	ListServers() ([]Server, error)
 	ListGitHubApps() ([]GitHubApp, error)
 
+	// Domínios
+	ListDomains(appID string) ([]Domain, error)
+	AddDomain(appID, domain string) (*Domain, error)
+	RemoveDomain(appID, domainUUID string) error
+
+	// Backups
+	BackupDB(id string) (*BackupResult, error)
+
 	// Deployments
 	ListDeployments() ([]Deployment, error)
 	GetDeployment(uuid string) (*Deployment, error)

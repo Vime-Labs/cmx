@@ -104,9 +104,10 @@ var (
 )
 
 var deploymentsHistoryCmd = &cobra.Command{
-	Use:   "history <uuid|nome-da-app>",
-	Short: "Histórico de deployments de uma aplicação",
-	Args:  cobra.ExactArgs(1),
+	Use:               "history <uuid|nome-da-app>",
+	Short:             "Histórico de deployments de uma aplicação",
+	Args:              cobra.ExactArgs(1),
+	ValidArgsFunction: completeApps,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		client := mustClient()
 		spin := ui.NewSpinner("Buscando histórico")

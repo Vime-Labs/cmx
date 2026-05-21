@@ -52,9 +52,10 @@ var appsListCmd = &cobra.Command{
 // ── get ─────────────────────────────────────────────────────────────────────
 
 var appsGetCmd = &cobra.Command{
-	Use:   "get <uuid|nome>",
-	Short: "Exibe detalhes de uma aplicação",
-	Args:  cobra.ExactArgs(1),
+	Use:               "get <uuid|nome>",
+	Short:             "Exibe detalhes de uma aplicação",
+	Args:              cobra.ExactArgs(1),
+	ValidArgsFunction: completeApps,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		client := mustClient()
 		spin := ui.NewSpinner("Buscando")
@@ -89,9 +90,10 @@ var (
 )
 
 var appsLogsCmd = &cobra.Command{
-	Use:   "logs <uuid|nome>",
-	Short: "Exibe logs de uma aplicação",
-	Args:  cobra.ExactArgs(1),
+	Use:               "logs <uuid|nome>",
+	Short:             "Exibe logs de uma aplicação",
+	Args:              cobra.ExactArgs(1),
+	ValidArgsFunction: completeApps,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		client := mustClient()
 
@@ -157,9 +159,10 @@ func max(a, b int) int {
 // ── deploy ───────────────────────────────────────────────────────────────────
 
 var appsDeployCmd = &cobra.Command{
-	Use:   "deploy <uuid|nome>",
-	Short: "Dispara um deploy",
-	Args:  cobra.ExactArgs(1),
+	Use:               "deploy <uuid|nome>",
+	Short:             "Dispara um deploy",
+	Args:              cobra.ExactArgs(1),
+	ValidArgsFunction: completeApps,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		client := mustClient()
 		force, _ := cmd.Flags().GetBool("force")
@@ -184,24 +187,27 @@ var appsDeployCmd = &cobra.Command{
 // ── start / stop / restart ──────────────────────────────────────────────────
 
 var appsStartCmd = &cobra.Command{
-	Use:   "start <uuid|nome>",
-	Short: "Inicia uma aplicação",
-	Args:  cobra.ExactArgs(1),
-	RunE:  appActionCmd("start", "Iniciando"),
+	Use:               "start <uuid|nome>",
+	Short:             "Inicia uma aplicação",
+	Args:              cobra.ExactArgs(1),
+	ValidArgsFunction: completeApps,
+	RunE:              appActionCmd("start", "Iniciando"),
 }
 
 var appsStopCmd = &cobra.Command{
-	Use:   "stop <uuid|nome>",
-	Short: "Para uma aplicação",
-	Args:  cobra.ExactArgs(1),
-	RunE:  appActionCmd("stop", "Parando"),
+	Use:               "stop <uuid|nome>",
+	Short:             "Para uma aplicação",
+	Args:              cobra.ExactArgs(1),
+	ValidArgsFunction: completeApps,
+	RunE:              appActionCmd("stop", "Parando"),
 }
 
 var appsRestartCmd = &cobra.Command{
-	Use:   "restart <uuid|nome>",
-	Short: "Reinicia uma aplicação",
-	Args:  cobra.ExactArgs(1),
-	RunE:  appActionCmd("restart", "Reiniciando"),
+	Use:               "restart <uuid|nome>",
+	Short:             "Reinicia uma aplicação",
+	Args:              cobra.ExactArgs(1),
+	ValidArgsFunction: completeApps,
+	RunE:              appActionCmd("restart", "Reiniciando"),
 }
 
 var actionMap = map[string]logger.Action{

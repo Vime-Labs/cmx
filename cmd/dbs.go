@@ -57,9 +57,10 @@ var dbsListCmd = &cobra.Command{
 // ── get ─────────────────────────────────────────────────────────────────────
 
 var dbsGetCmd = &cobra.Command{
-	Use:   "get <uuid|nome>",
-	Short: "Exibe detalhes de um banco de dados",
-	Args:  cobra.ExactArgs(1),
+	Use:               "get <uuid|nome>",
+	Short:             "Exibe detalhes de um banco de dados",
+	Args:              cobra.ExactArgs(1),
+	ValidArgsFunction: completeDBs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		client := mustClient()
 		spin := ui.NewSpinner("Buscando")
@@ -92,24 +93,27 @@ var dbsGetCmd = &cobra.Command{
 // ── start / stop / restart ──────────────────────────────────────────────────
 
 var dbsStartCmd = &cobra.Command{
-	Use:   "start <uuid|nome>",
-	Short: "Inicia um banco de dados",
-	Args:  cobra.ExactArgs(1),
-	RunE:  dbActionCmd("start", "Iniciando"),
+	Use:               "start <uuid|nome>",
+	Short:             "Inicia um banco de dados",
+	Args:              cobra.ExactArgs(1),
+	ValidArgsFunction: completeDBs,
+	RunE:              dbActionCmd("start", "Iniciando"),
 }
 
 var dbsStopCmd = &cobra.Command{
-	Use:   "stop <uuid|nome>",
-	Short: "Para um banco de dados",
-	Args:  cobra.ExactArgs(1),
-	RunE:  dbActionCmd("stop", "Parando"),
+	Use:               "stop <uuid|nome>",
+	Short:             "Para um banco de dados",
+	Args:              cobra.ExactArgs(1),
+	ValidArgsFunction: completeDBs,
+	RunE:              dbActionCmd("stop", "Parando"),
 }
 
 var dbsRestartCmd = &cobra.Command{
-	Use:   "restart <uuid|nome>",
-	Short: "Reinicia um banco de dados",
-	Args:  cobra.ExactArgs(1),
-	RunE:  dbActionCmd("restart", "Reiniciando"),
+	Use:               "restart <uuid|nome>",
+	Short:             "Reinicia um banco de dados",
+	Args:              cobra.ExactArgs(1),
+	ValidArgsFunction: completeDBs,
+	RunE:              dbActionCmd("restart", "Reiniciando"),
 }
 
 var dbActionMap = map[string]logger.Action{

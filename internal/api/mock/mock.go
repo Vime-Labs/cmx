@@ -17,15 +17,15 @@ import "github.com/Vime-Labs/cmx/internal/api"
 type Client struct {
 	PingFunc func() error
 
-	ListAppsFunc   func() ([]api.Application, error)
-	GetAppFunc     func(id string) (*api.Application, error)
-	AppLogsFunc    func(id string, lines int) (string, error)
-	DeployAppFunc  func(id string, force bool) (*api.DeployResponse, error)
+	ListAppsFunc    func() ([]api.Application, error)
+	GetAppFunc      func(id string) (*api.Application, error)
+	AppLogsFunc     func(id string, lines int) (string, error)
+	DeployAppFunc   func(id string, force bool) (*api.DeployResponse, error)
 	DeployByTagFunc func(tag string, force bool) (*api.DeployResponse, error)
-	StartAppFunc   func(id string) (string, error)
-	StopAppFunc    func(id string) (string, error)
-	RestartAppFunc func(id string) (string, error)
-	CreateAppFunc  func(req api.CreateAppRequest) (*api.CreateAppResponse, error)
+	StartAppFunc    func(id string) (string, error)
+	StopAppFunc     func(id string) (string, error)
+	RestartAppFunc  func(id string) (string, error)
+	CreateAppFunc   func(req api.CreateAppRequest) (*api.CreateAppResponse, error)
 
 	ListAppEnvsFunc       func(id string) ([]api.EnvVar, error)
 	SetAppEnvFunc         func(appID, key, value string) error
@@ -38,10 +38,16 @@ type Client struct {
 	RestartDBFunc func(id string) (string, error)
 	CreateDBFunc  func(dbType string, req api.CreateDBRequest) (*api.CreateDBResponse, error)
 
-	ListProjectsFunc  func() ([]api.Project, error)
-	GetProjectFunc    func(uuid string) (*api.Project, error)
-	ListServersFunc   func() ([]api.Server, error)
+	ListProjectsFunc   func() ([]api.Project, error)
+	GetProjectFunc     func(uuid string) (*api.Project, error)
+	ListServersFunc    func() ([]api.Server, error)
 	ListGitHubAppsFunc func() ([]api.GitHubApp, error)
+
+	ListDomainsFunc  func(appID string) ([]api.Domain, error)
+	AddDomainFunc    func(appID, domain string) (*api.Domain, error)
+	RemoveDomainFunc func(appID, domainUUID string) error
+
+	BackupDBFunc func(id string) (*api.BackupResult, error)
 
 	ListDeploymentsFunc    func() ([]api.Deployment, error)
 	GetDeploymentFunc      func(uuid string) (*api.Deployment, error)
@@ -208,6 +214,34 @@ func (m *Client) ListGitHubApps() ([]api.GitHubApp, error) {
 		return m.ListGitHubAppsFunc()
 	}
 	return nil, nil
+}
+
+func (m *Client) ListDomains(appID string) ([]api.Domain, error) {
+	if m.ListDomainsFunc != nil {
+		return m.ListDomainsFunc(appID)
+	}
+	return nil, nil
+}
+
+func (m *Client) AddDomain(appID, domain string) (*api.Domain, error) {
+	if m.AddDomainFunc != nil {
+		return m.AddDomainFunc(appID, domain)
+	}
+	return &api.Domain{}, nil
+}
+
+func (m *Client) RemoveDomain(appID, domainUUID string) error {
+	if m.RemoveDomainFunc != nil {
+		return m.RemoveDomainFunc(appID, domainUUID)
+	}
+	return nil
+}
+
+func (m *Client) BackupDB(id string) (*api.BackupResult, error) {
+	if m.BackupDBFunc != nil {
+		return m.BackupDBFunc(id)
+	}
+	return &api.BackupResult{}, nil
 }
 
 func (m *Client) ListDeployments() ([]api.Deployment, error) {
