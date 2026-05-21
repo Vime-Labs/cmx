@@ -8,15 +8,24 @@ CLI da Vime Labs para gerenciar aplicações e bancos de dados nos servidores re
 
 **macOS / Linux**
 ```sh
-curl -fsSL https://raw.githubusercontent.com/Vime-Labs/cmx/main/scripts/install.sh | sh
+gh release download --repo Vime-Labs/cmx \
+  --pattern "cmx-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/')" \
+  --output /tmp/cmx --clobber \
+  && chmod +x /tmp/cmx \
+  && sudo mv /tmp/cmx /usr/local/bin/cmx
 ```
 
 **Windows (PowerShell)**
 ```powershell
-irm https://raw.githubusercontent.com/Vime-Labs/cmx/main/scripts/install.ps1 | iex
+$dir = "$env:USERPROFILE\.cmx\bin"
+New-Item -Force -ItemType Directory $dir | Out-Null
+gh release download --repo Vime-Labs/cmx --pattern cmx-windows-amd64.exe --output "$dir\cmx.exe" --clobber
+$p = [Environment]::GetEnvironmentVariable("PATH", "User")
+if ($p -notlike "*$dir*") { [Environment]::SetEnvironmentVariable("PATH", "$p;$dir", "User") }
+$env:PATH += ";$dir"
 ```
 
-Após a instalação, reinicie o terminal e execute `cmx --help`.
+Após a instalação no Windows, reinicie o terminal para o PATH atualizar.
 
 ## Configuração
 
