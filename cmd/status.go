@@ -104,6 +104,22 @@ var statusCmd = &cobra.Command{
 			return errs[0]
 		}
 		spin.Stop("OK")
+
+		// ── JSON output ─────────────────────────────────────────────
+		if renderJSON(struct {
+			Servers     []api.Server      `json:"servers"`
+			Apps        []api.Application `json:"apps"`
+			Databases   []api.Database    `json:"databases"`
+			Deployments []api.Deployment  `json:"deployments"`
+		}{
+			Servers:     servers,
+			Apps:        apps,
+			Databases:   dbs,
+			Deployments: deps,
+		}) {
+			return nil
+		}
+
 		fmt.Println()
 
 		// ── dashboard ──────────────────────────────────────────────

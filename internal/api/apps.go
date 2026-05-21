@@ -7,16 +7,17 @@ import (
 )
 
 type Application struct {
-	UUID        string `json:"uuid"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
-	Status      string `json:"status"`
-	Repository  string `json:"git_repository"`
-	Branch      string `json:"git_branch"`
-	BuildPack   string `json:"build_pack"`
-	Domains     string `json:"fqdn"`
-	CreatedAt   string `json:"created_at"`
-	UpdatedAt   string `json:"updated_at"`
+	UUID         string `json:"uuid"`
+	Name         string `json:"name"`
+	Description  string `json:"description"`
+	Status       string `json:"status"`
+	Repository   string `json:"git_repository"`
+	Branch       string `json:"git_branch"`
+	BuildPack    string `json:"build_pack"`
+	PortsExposes string `json:"ports_exposes"`
+	Domains      string `json:"fqdn"`
+	CreatedAt    string `json:"created_at"`
+	UpdatedAt    string `json:"updated_at"`
 }
 
 type DeployResponse struct {
@@ -129,6 +130,17 @@ func (c *Client) appAction(id, action string) (string, error) {
 		return fmt.Sprintf("%s (deployment: %s)", resp.Message, resp.DeploymentUUID), nil
 	}
 	return resp.Message, nil
+}
+
+type UpdateAppRequest struct {
+	Name          *string `json:"name,omitempty"`
+	BuildPack     *string `json:"build_pack,omitempty"`
+	GitBranch     *string `json:"git_branch,omitempty"`
+	GitRepository *string `json:"git_repository,omitempty"`
+	PortsExposes  *string `json:"ports_exposes,omitempty"`
+	FQDN          *string `json:"fqdn,omitempty"`
+	PrivateKeyID  *string `json:"private_key_id,omitempty"`
+	DestDir       *string `json:"dest_dir,omitempty"`
 }
 
 type CreateAppRequest struct {

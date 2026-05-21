@@ -33,6 +33,10 @@ var appsEnvsListCmd = &cobra.Command{
 		}
 		spin.Stop(fmt.Sprintf("%d variável(is) encontrada(s)", len(envs)))
 
+		if renderJSON(envs) {
+			return nil
+		}
+
 		if len(envs) == 0 {
 			return nil
 		}

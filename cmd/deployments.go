@@ -29,6 +29,10 @@ var deploymentsListCmd = &cobra.Command{
 		}
 		spin.Stop(fmt.Sprintf("%d deployment(s) ativo(s)", len(deps)))
 
+		if renderJSON(deps) {
+			return nil
+		}
+
 		if len(deps) == 0 {
 			return nil
 		}
@@ -62,6 +66,10 @@ var deploymentsGetCmd = &cobra.Command{
 			return err
 		}
 		spin.Stop(d.UUID)
+
+		if renderJSON(d) {
+			return nil
+		}
 		fmt.Println()
 
 		kv := ui.NewTable("", "")
@@ -117,6 +125,10 @@ var deploymentsHistoryCmd = &cobra.Command{
 			return err
 		}
 		spin.Stop(fmt.Sprintf("%d deployment(s)", len(deps)))
+
+		if renderJSON(deps) {
+			return nil
+		}
 
 		if len(deps) == 0 {
 			return nil

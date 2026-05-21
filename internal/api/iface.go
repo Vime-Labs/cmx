@@ -16,6 +16,8 @@ type API interface {
 	StopApp(id string) (string, error)
 	RestartApp(id string) (string, error)
 	CreateApp(req CreateAppRequest) (*CreateAppResponse, error)
+	DeleteApp(id string) error
+	UpdateApp(id string, req UpdateAppRequest) (*Application, error)
 
 	// Variáveis de ambiente
 	ListAppEnvs(id string) ([]EnvVar, error)
@@ -29,6 +31,8 @@ type API interface {
 	StopDB(id string) (string, error)
 	RestartDB(id string) (string, error)
 	CreateDB(dbType string, req CreateDBRequest) (*CreateDBResponse, error)
+	DeleteDB(id string) error
+	UpdateDB(id string, req UpdateDBRequest) (*Database, error)
 
 	// Projetos e infraestrutura
 	ListProjects() ([]Project, error)

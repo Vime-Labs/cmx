@@ -26,6 +26,8 @@ type Client struct {
 	StopAppFunc     func(id string) (string, error)
 	RestartAppFunc  func(id string) (string, error)
 	CreateAppFunc   func(req api.CreateAppRequest) (*api.CreateAppResponse, error)
+	DeleteAppFunc   func(id string) error
+	UpdateAppFunc   func(id string, req api.UpdateAppRequest) (*api.Application, error)
 
 	ListAppEnvsFunc       func(id string) ([]api.EnvVar, error)
 	SetAppEnvFunc         func(appID, key, value string) error
@@ -37,6 +39,8 @@ type Client struct {
 	StopDBFunc    func(id string) (string, error)
 	RestartDBFunc func(id string) (string, error)
 	CreateDBFunc  func(dbType string, req api.CreateDBRequest) (*api.CreateDBResponse, error)
+	DeleteDBFunc  func(id string) error
+	UpdateDBFunc  func(id string, req api.UpdateDBRequest) (*api.Database, error)
 
 	ListProjectsFunc   func() ([]api.Project, error)
 	GetProjectFunc     func(uuid string) (*api.Project, error)
@@ -125,6 +129,20 @@ func (m *Client) CreateApp(req api.CreateAppRequest) (*api.CreateAppResponse, er
 	return &api.CreateAppResponse{}, nil
 }
 
+func (m *Client) DeleteApp(id string) error {
+	if m.DeleteAppFunc != nil {
+		return m.DeleteAppFunc(id)
+	}
+	return nil
+}
+
+func (m *Client) UpdateApp(id string, req api.UpdateAppRequest) (*api.Application, error) {
+	if m.UpdateAppFunc != nil {
+		return m.UpdateAppFunc(id, req)
+	}
+	return &api.Application{}, nil
+}
+
 func (m *Client) ListAppEnvs(id string) ([]api.EnvVar, error) {
 	if m.ListAppEnvsFunc != nil {
 		return m.ListAppEnvsFunc(id)
@@ -186,6 +204,20 @@ func (m *Client) CreateDB(dbType string, req api.CreateDBRequest) (*api.CreateDB
 		return m.CreateDBFunc(dbType, req)
 	}
 	return &api.CreateDBResponse{}, nil
+}
+
+func (m *Client) DeleteDB(id string) error {
+	if m.DeleteDBFunc != nil {
+		return m.DeleteDBFunc(id)
+	}
+	return nil
+}
+
+func (m *Client) UpdateDB(id string, req api.UpdateDBRequest) (*api.Database, error) {
+	if m.UpdateDBFunc != nil {
+		return m.UpdateDBFunc(id, req)
+	}
+	return &api.Database{}, nil
 }
 
 func (m *Client) ListProjects() ([]api.Project, error) {

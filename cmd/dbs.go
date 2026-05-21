@@ -30,6 +30,10 @@ var dbsListCmd = &cobra.Command{
 		}
 		spin.Stop(fmt.Sprintf("%d banco(s) encontrado(s)", len(dbs)))
 
+		if renderJSON(dbs) {
+			return nil
+		}
+
 		if len(dbs) == 0 {
 			return nil
 		}
@@ -70,6 +74,10 @@ var dbsGetCmd = &cobra.Command{
 			return err
 		}
 		spin.Stop(db.Name)
+
+		if renderJSON(db) {
+			return nil
+		}
 		fmt.Println()
 
 		public := ui.Gray("não")

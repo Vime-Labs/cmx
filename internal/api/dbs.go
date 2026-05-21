@@ -11,7 +11,7 @@ type Database struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
 	Status      string `json:"status"`
-	Type        string `json:"type"`         // ex: "standalone-postgresql"
+	Type        string `json:"type"` // ex: "standalone-postgresql"
 	Image       string `json:"image"`
 	IsPublic    bool   `json:"is_public"`
 	PublicPort  int    `json:"public_port"`
@@ -102,6 +102,14 @@ type CreateDBRequest struct {
 	Image           string `json:"image,omitempty"`
 	IsPublic        bool   `json:"is_public,omitempty"`
 	PublicPort      int    `json:"public_port,omitempty"`
+}
+
+type UpdateDBRequest struct {
+	Name        *string `json:"name,omitempty"`
+	Image       *string `json:"image,omitempty"`
+	IsPublic    *bool   `json:"is_public,omitempty"`
+	PublicPort  *int    `json:"public_port,omitempty"`
+	Description *string `json:"description,omitempty"`
 }
 
 type CreateDBResponse struct {

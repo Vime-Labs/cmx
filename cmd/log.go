@@ -47,6 +47,10 @@ func runLog(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("erro ao ler histórico: %w", err)
 	}
 
+	if renderJSON(entries) {
+		return nil
+	}
+
 	if len(entries) == 0 {
 		ui.Info("Nenhuma atividade registrada ainda.")
 		return nil

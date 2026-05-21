@@ -30,6 +30,10 @@ var appsListCmd = &cobra.Command{
 		}
 		spin.Stop(fmt.Sprintf("%d aplicação(ões) encontrada(s)", len(apps)))
 
+		if renderJSON(apps) {
+			return nil
+		}
+
 		if len(apps) == 0 {
 			return nil
 		}
@@ -65,6 +69,10 @@ var appsGetCmd = &cobra.Command{
 			return err
 		}
 		spin.Stop(app.Name)
+
+		if renderJSON(app) {
+			return nil
+		}
 		fmt.Println()
 
 		kv := ui.NewTable("", "")

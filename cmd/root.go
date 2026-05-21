@@ -10,6 +10,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var outputFormat string
+
 var rootCmd = &cobra.Command{
 	Use:          "cmx",
 	Short:        "Vime Labs — Cloud Management CLI",
@@ -42,5 +44,6 @@ func mustClient() api.API {
 }
 
 func init() {
+	rootCmd.PersistentFlags().StringVarP(&outputFormat, "output", "o", "table", "Formato de saída: table (padrão) ou json")
 	rootCmd.AddCommand(configureCmd)
 }

@@ -14,6 +14,7 @@ var (
 	deployTag         string
 	deployForceGlobal bool
 	deployWait        bool
+	deployCheck       bool
 )
 
 var deployCmd = &cobra.Command{
@@ -34,6 +35,10 @@ Exemplos:
 		return completeApps(cmd, args, toComplete)
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
+		if deployCheck && !deployWait {
+			return fmt.Errorf("--check requer --wait")
+		}
+
 		if len(args) == 0 && deployTag == "" {
 			return fmt.Errorf("informe um uuid/nome ou use --tag <tag>")
 		}
@@ -74,6 +79,9 @@ Exemplos:
 						}
 						if strings.Contains(status, "fail") || strings.Contains(status, "error") || strings.Contains(status, "cancel") {
 							spin.Fail(fmt.Sprintf("Deploy %s", dep.Status))
+							if deployCheck {
+								return fmt.Errorf("deploy %s: %s", depUUID, dep.Status)
+							}
 							break loopTag
 						}
 						time.Sleep(3 * time.Second)
@@ -117,6 +125,9 @@ Exemplos:
 					}
 					if strings.Contains(status, "fail") || strings.Contains(status, "error") || strings.Contains(status, "cancel") {
 						spin.Fail(fmt.Sprintf("Deploy %s", dep.Status))
+						if deployCheck {
+							return fmt.Errorf("deploy %s: %s", depUUID, dep.Status)
+						}
 						break loopApp
 					}
 					time.Sleep(3 * time.Second)
@@ -132,5 +143,6 @@ func init() {
 	deployCmd.Flags().StringVar(&deployTag, "tag", "", "Dispara deploy em todos os recursos com esta tag")
 	deployCmd.Flags().BoolVarP(&deployForceGlobal, "force", "f", false, "Força rebuild sem cache")
 	deployCmd.Flags().BoolVarP(&deployWait, "wait", "w", false, "Aguarda o deploy concluir")
+	deployCmd.Flags().BoolVar(&deployCheck, "check", false, "Exit code reflete sucesso/falha do deploy (requer --wait)")
 	rootCmd.AddCommand(deployCmd)
 }

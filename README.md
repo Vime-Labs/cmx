@@ -47,6 +47,9 @@ export CMX_TOKEN=seu-token
 ```sh
 cmx apps list                        # lista todas as aplicações
 cmx apps get <uuid|nome>             # detalhes de uma aplicação
+cmx apps create                      # wizard interativo
+cmx apps update <uuid|nome> --name "novo-nome"  # atualiza configurações
+cmx apps delete <uuid|nome>          # remove (com confirmação)
 cmx apps deploy <uuid|nome>          # dispara deploy
 cmx apps deploy <uuid|nome> --force  # deploy sem cache
 cmx apps deploy <uuid|nome> --wait   # deploy bloqueante (acompanha até concluir)
@@ -56,7 +59,6 @@ cmx apps logs <uuid|nome> --follow   # acompanha logs em tempo real
 cmx apps start <uuid|nome>
 cmx apps stop <uuid|nome>
 cmx apps restart <uuid|nome>
-cmx apps create                      # wizard interativo
 ```
 
 ### Variáveis de ambiente
@@ -73,10 +75,12 @@ cmx apps envs delete <uuid|nome> CHAVE
 ```sh
 cmx dbs list
 cmx dbs get <uuid|nome>
+cmx dbs create                       # wizard interativo
+cmx dbs update <uuid|nome> --name "novo-nome"  # atualiza configurações
+cmx dbs delete <uuid|nome>          # remove (com confirmação)
 cmx dbs start <uuid|nome>
 cmx dbs stop <uuid|nome>
 cmx dbs restart <uuid|nome>
-cmx dbs create                       # wizard interativo
 cmx dbs backup <uuid|nome>           # dispara backup
 ```
 
@@ -94,6 +98,7 @@ cmx domain remove <app-id> <uuid>    # remove domínio
 cmx deploy <uuid|nome>               # deploy por nome ou UUID
 cmx deploy <uuid|nome> --force       # deploy sem cache
 cmx deploy <uuid|nome> --wait        # deploy bloqueante (acompanha até concluir)
+cmx deploy <uuid|nome> --wait --check  # deploy com gating CI/CD (exit code)
 cmx deploy --tag production          # deploy de todos com a tag
 cmx deploy --tag production --wait   # deploy bloqueante por tag
 
@@ -126,6 +131,19 @@ cmx tunnel --user ubuntu meu-app 3000:3000
 
 ```sh
 cmx status                           # visão geral do ambiente
+```
+
+### Saída JSON
+
+Todos os comandos `list` e `get` aceitam `--output json` (ou `-o json`)
+para emitir JSON puro — ideal para scripts e automação:
+
+```sh
+cmx apps list -o json
+cmx dbs get meu-banco -o json
+cmx deployments list --output json
+cmx status -o json
+cmx log --output json
 ```
 
 ### Histórico de atividade

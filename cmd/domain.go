@@ -31,6 +31,10 @@ var domainListCmd = &cobra.Command{
 		}
 		spin.Stop(fmt.Sprintf("%d domínio(s) encontrado(s)", len(domains)))
 
+		if renderJSON(domains) {
+			return nil
+		}
+
 		if len(domains) == 0 {
 			return nil
 		}
