@@ -123,6 +123,36 @@ func (c *Client) appAction(id, action string) (string, error) {
 	return resp.Message, nil
 }
 
+type CreateAppRequest struct {
+	ProjectUUID     string `json:"project_uuid"`
+	ServerUUID      string `json:"server_uuid"`
+	EnvironmentName string `json:"environment_name"`
+	GitHubAppUUID   string `json:"github_app_uuid"`
+	GitRepository   string `json:"git_repository"`
+	GitBranch       string `json:"git_branch"`
+	BuildPack       string `json:"build_pack"`
+	PortsExposes    string `json:"ports_exposes"`
+	Name            string `json:"name,omitempty"`
+	FQDN            string `json:"fqdn,omitempty"`
+}
+
+type CreateAppResponse struct {
+	UUID           string `json:"uuid"`
+	DeploymentUUID string `json:"deployment_uuid"`
+}
+
+func (c *Client) CreateApp(req CreateAppRequest) (*CreateAppResponse, error) {
+	data, err := c.Post("/applications/private-github-app", req)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := decode[CreateAppResponse](data)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
 // resolveAppUUID aceita UUID direto ou nome (busca na lista).
 func (c *Client) resolveAppUUID(id string) (string, error) {
 	if looksLikeUUID(id) {
