@@ -96,7 +96,21 @@ cmx deployments cancel <uuid>        # cancela deployment ativo
 ```sh
 cmx version
 cmx configure
+cmx log            # histórico de atividade local
+cmx log -n 50      # últimas 50 ações
+cmx log --cmd deploy  # filtrar por comando
+cmx log --clear    # apagar o histórico
 ```
+
+### Histórico de atividade
+
+Toda ação executada pela CLI (criar recurso, deploy, start/stop, etc.) é registrada
+localmente em `~/.cmx/activity.log` no formato JSONL.
+
+Use `cmx log` para consultar o histórico de forma legível, agrupado por dia,
+com status (✓/✗), duração e detalhes.
+
+Não é telemetria — nada é enviado para fora da sua máquina.
 
 ## Dicas
 

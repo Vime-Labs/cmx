@@ -3,8 +3,10 @@ package cmd
 import (
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/Vime-Labs/cmx/internal/api"
+	"github.com/Vime-Labs/cmx/internal/logger"
 	"github.com/Vime-Labs/cmx/internal/ui"
 	"github.com/Vime-Labs/cmx/internal/validate"
 	"github.com/spf13/cobra"
@@ -146,6 +148,7 @@ func runDBsCreate(cmd *cobra.Command, args []string) error {
 
 	// ── 9. Criar ──────────────────────────────────────────────────────────────
 	fmt.Print("\nCriando banco de dados... ")
+	start := time.Now()
 	resp, err := client.CreateDB(dbType, api.CreateDBRequest{
 		ProjectUUID:     project.UUID,
 		ServerUUID:      server.UUID,
@@ -157,9 +160,12 @@ func runDBsCreate(cmd *cobra.Command, args []string) error {
 	})
 	if err != nil {
 		fmt.Println("falhou")
+		logger.Log(logger.ActionDBCreate, logger.ResourceDB, name, err.Error(), "error", time.Since(start))
 		return err
 	}
 	fmt.Println("OK")
+	logger.Log(logger.ActionDBCreate, logger.ResourceDB, name,
+		fmt.Sprintf("UUID: %s", resp.UUID), "success", time.Since(start))
 	fmt.Printf("\nBanco criado: %s\n", resp.UUID)
 	fmt.Printf("\nVerifique o status com: cmx dbs get %s\n", name)
 	return nil

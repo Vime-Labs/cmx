@@ -6,9 +6,10 @@ import (
 	"os"
 	"strings"
 
-	"github.com/spf13/cobra"
 	"github.com/Vime-Labs/cmx/internal/api"
 	"github.com/Vime-Labs/cmx/internal/config"
+	"github.com/Vime-Labs/cmx/internal/logger"
+	"github.com/spf13/cobra"
 )
 
 var configureCmd = &cobra.Command{
@@ -45,6 +46,7 @@ func runConfigure(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("salvando config: %w", err)
 	}
 
+	logger.Log(logger.ActionConfigure, logger.ResourceCfg, url, "", "success")
 	fmt.Println("Configuração salva em ~/.cmx/config.yaml")
 	return nil
 }

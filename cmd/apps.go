@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Vime-Labs/cmx/internal/logger"
 	"github.com/Vime-Labs/cmx/internal/ui"
 	"github.com/spf13/cobra"
 )
@@ -162,13 +163,17 @@ var appsDeployCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		client := mustClient()
 		force, _ := cmd.Flags().GetBool("force")
+		start := time.Now()
 		spin := ui.NewSpinner(fmt.Sprintf("Disparando deploy para %q", args[0]))
 		resp, err := client.DeployApp(args[0], force)
 		if err != nil {
 			spin.Fail("falhou")
+			logger.Log(logger.ActionAppDeploy, logger.ResourceApp, args[0], err.Error(), "error", time.Since(start))
 			return err
 		}
 		spin.Stop("Deploy enfileirado")
+		logger.Log(logger.ActionAppDeploy, logger.ResourceApp, args[0],
+			fmt.Sprintf("%d deployment(s)", len(resp.Deployments)), "success", time.Since(start))
 		for _, d := range resp.Deployments {
 			ui.Info(fmt.Sprintf("deployment: %s", d.DeploymentUUID))
 		}
@@ -199,9 +204,16 @@ var appsRestartCmd = &cobra.Command{
 	RunE:  appActionCmd("restart", "Reiniciando"),
 }
 
+var actionMap = map[string]logger.Action{
+	"start":   logger.ActionAppStart,
+	"stop":    logger.ActionAppStop,
+	"restart": logger.ActionAppRestart,
+}
+
 func appActionCmd(action, spinMsg string) func(*cobra.Command, []string) error {
 	return func(cmd *cobra.Command, args []string) error {
 		client := mustClient()
+		start := time.Now()
 		spin := ui.NewSpinner(fmt.Sprintf("%s %q", spinMsg, args[0]))
 		var msg string
 		var err error
@@ -215,9 +227,11 @@ func appActionCmd(action, spinMsg string) func(*cobra.Command, []string) error {
 		}
 		if err != nil {
 			spin.Fail("falhou")
+			logger.Log(actionMap[action], logger.ResourceApp, args[0], err.Error(), "error", time.Since(start))
 			return err
 		}
 		spin.Stop(msg)
+		logger.Log(actionMap[action], logger.ResourceApp, args[0], msg, "success", time.Since(start))
 		return nil
 	}
 }

@@ -3,7 +3,9 @@ package cmd
 import (
 	"fmt"
 	"strconv"
+	"time"
 
+	"github.com/Vime-Labs/cmx/internal/logger"
 	"github.com/Vime-Labs/cmx/internal/ui"
 	"github.com/spf13/cobra"
 )
@@ -110,9 +112,16 @@ var dbsRestartCmd = &cobra.Command{
 	RunE:  dbActionCmd("restart", "Reiniciando"),
 }
 
+var dbActionMap = map[string]logger.Action{
+	"start":   logger.ActionDBStart,
+	"stop":    logger.ActionDBStop,
+	"restart": logger.ActionDBRestart,
+}
+
 func dbActionCmd(action, spinMsg string) func(*cobra.Command, []string) error {
 	return func(cmd *cobra.Command, args []string) error {
 		client := mustClient()
+		start := time.Now()
 		spin := ui.NewSpinner(fmt.Sprintf("%s %q", spinMsg, args[0]))
 		var msg string
 		var err error
@@ -126,9 +135,11 @@ func dbActionCmd(action, spinMsg string) func(*cobra.Command, []string) error {
 		}
 		if err != nil {
 			spin.Fail("falhou")
+			logger.Log(dbActionMap[action], logger.ResourceDB, args[0], err.Error(), "error", time.Since(start))
 			return err
 		}
 		spin.Stop(msg)
+		logger.Log(dbActionMap[action], logger.ResourceDB, args[0], msg, "success", time.Since(start))
 		return nil
 	}
 }

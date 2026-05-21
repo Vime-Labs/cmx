@@ -2,7 +2,9 @@ package cmd
 
 import (
 	"fmt"
+	"time"
 
+	"github.com/Vime-Labs/cmx/internal/logger"
 	"github.com/Vime-Labs/cmx/internal/ui"
 	"github.com/spf13/cobra"
 )
@@ -81,12 +83,15 @@ var deploymentsCancelCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		client := mustClient()
+		start := time.Now()
 		spin := ui.NewSpinner(fmt.Sprintf("Cancelando deployment %s", args[0]))
 		if err := client.CancelDeployment(args[0]); err != nil {
 			spin.Fail("falhou")
+			logger.Log(logger.ActionDeployCancel, logger.ResourceDepl, args[0], err.Error(), "error", time.Since(start))
 			return err
 		}
 		spin.Stop("Deployment cancelado")
+		logger.Log(logger.ActionDeployCancel, logger.ResourceDepl, args[0], "", "success", time.Since(start))
 		return nil
 	},
 }

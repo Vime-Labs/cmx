@@ -3,8 +3,10 @@ package cmd
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/Vime-Labs/cmx/internal/api"
+	"github.com/Vime-Labs/cmx/internal/logger"
 	"github.com/Vime-Labs/cmx/internal/ui"
 	"github.com/Vime-Labs/cmx/internal/validate"
 	"github.com/spf13/cobra"
@@ -159,6 +161,7 @@ func runAppsCreate(cmd *cobra.Command, args []string) error {
 
 	// ── 12. Criar ─────────────────────────────────────────────────────────────
 	fmt.Print("\nCriando aplicação... ")
+	start := time.Now()
 	resp, err := client.CreateApp(api.CreateAppRequest{
 		ProjectUUID:     project.UUID,
 		ServerUUID:      server.UUID,
@@ -173,9 +176,12 @@ func runAppsCreate(cmd *cobra.Command, args []string) error {
 	})
 	if err != nil {
 		fmt.Println("falhou")
+		logger.Log(logger.ActionAppCreate, logger.ResourceApp, name, err.Error(), "error", time.Since(start))
 		return err
 	}
 	fmt.Println("OK")
+	logger.Log(logger.ActionAppCreate, logger.ResourceApp, name,
+		fmt.Sprintf("UUID: %s", resp.UUID), "success", time.Since(start))
 	fmt.Printf("\nAplicação criada: %s\n", resp.UUID)
 	if resp.DeploymentUUID != "" {
 		fmt.Printf("Deploy iniciado:  %s\n", resp.DeploymentUUID)

@@ -3,7 +3,9 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"time"
 
+	"github.com/Vime-Labs/cmx/internal/logger"
 	"github.com/Vime-Labs/cmx/internal/ui"
 	"github.com/Vime-Labs/cmx/internal/validate"
 	"github.com/spf13/cobra"
@@ -68,12 +70,15 @@ Exemplos:
 		}
 
 		client := mustClient()
+		start := time.Now()
 		spin := ui.NewSpinner(fmt.Sprintf("Definindo %s", key))
 		if err := client.SetAppEnv(appID, key, value); err != nil {
 			spin.Fail("falhou")
+			logger.Log(logger.ActionEnvSet, logger.ResourceEnv, appID, fmt.Sprintf("%s: %s", key, err.Error()), "error", time.Since(start))
 			return err
 		}
 		spin.Stop(fmt.Sprintf("%s definida", key))
+		logger.Log(logger.ActionEnvSet, logger.ResourceEnv, appID, fmt.Sprintf("%s=%s", key, value), "success", time.Since(start))
 		return nil
 	},
 }
@@ -88,12 +93,15 @@ var appsEnvsDeleteCmd = &cobra.Command{
 		appID, key := args[0], args[1]
 
 		client := mustClient()
+		start := time.Now()
 		spin := ui.NewSpinner(fmt.Sprintf("Removendo %s", key))
 		if err := client.DeleteAppEnvByKey(appID, key); err != nil {
 			spin.Fail("falhou")
+			logger.Log(logger.ActionEnvDelete, logger.ResourceEnv, appID, fmt.Sprintf("%s: %s", key, err.Error()), "error", time.Since(start))
 			return err
 		}
 		spin.Stop(fmt.Sprintf("%s removida", key))
+		logger.Log(logger.ActionEnvDelete, logger.ResourceEnv, appID, key, "success", time.Since(start))
 		return nil
 	},
 }
