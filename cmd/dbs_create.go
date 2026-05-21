@@ -3,11 +3,11 @@ package cmd
 import (
 	"fmt"
 	"strconv"
-	"strings"
 
-	"github.com/spf13/cobra"
 	"github.com/Vime-Labs/cmx/internal/api"
 	"github.com/Vime-Labs/cmx/internal/ui"
+	"github.com/Vime-Labs/cmx/internal/validate"
+	"github.com/spf13/cobra"
 )
 
 var dbTypes = []string{
@@ -92,12 +92,7 @@ func runDBsCreate(cmd *cobra.Command, args []string) error {
 	dbType := dbTypes[dbTypeIdx]
 
 	// ── 5. Nome ───────────────────────────────────────────────────────────────
-	name, err := ui.Input("Nome do banco", "", func(v string) error {
-		if strings.ContainsAny(v, " \t/\\") {
-			return fmt.Errorf("nome não pode conter espaços ou barras")
-		}
-		return nil
-	})
+	name, err := ui.Input("Nome do banco", "", validate.ResourceName)
 	if err != nil {
 		return err
 	}
@@ -105,10 +100,7 @@ func runDBsCreate(cmd *cobra.Command, args []string) error {
 	// ── 6. Imagem Docker ──────────────────────────────────────────────────────
 	defaultImage := api.DBDefaultImages[dbType]
 	image, err := ui.Input("Imagem Docker", defaultImage, func(v string) error {
-		if !strings.Contains(v, ":") {
-			return fmt.Errorf("inclua a tag da versão (ex: %s)", defaultImage)
-		}
-		return nil
+		return validate.ImageTag(v, defaultImage)
 	})
 	if err != nil {
 		return err

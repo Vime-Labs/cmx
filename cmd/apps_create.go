@@ -2,13 +2,12 @@ package cmd
 
 import (
 	"fmt"
-	"regexp"
-	"strconv"
 	"strings"
 
-	"github.com/spf13/cobra"
 	"github.com/Vime-Labs/cmx/internal/api"
 	"github.com/Vime-Labs/cmx/internal/ui"
+	"github.com/Vime-Labs/cmx/internal/validate"
+	"github.com/spf13/cobra"
 )
 
 var validBuildPacks = []string{"nixpacks", "dockerfile", "static", "dockercompose"}
@@ -105,24 +104,13 @@ func runAppsCreate(cmd *cobra.Command, args []string) error {
 	ghApp := ghApps[ghIdx]
 
 	// ── 5. Repositório ────────────────────────────────────────────────────────
-	repoRegex := regexp.MustCompile(`^[a-zA-Z0-9._-]+/[a-zA-Z0-9._-]+$`)
-	repo, err := ui.Input("Repositório (owner/repo)", "", func(v string) error {
-		if !repoRegex.MatchString(v) {
-			return fmt.Errorf("formato inválido — use owner/repo (ex: Vime-Labs/meu-app)")
-		}
-		return nil
-	})
+	repo, err := ui.Input("Repositório (owner/repo)", "", validate.RepoFormat)
 	if err != nil {
 		return err
 	}
 
 	// ── 6. Branch ─────────────────────────────────────────────────────────────
-	branch, err := ui.Input("Branch", "main", func(v string) error {
-		if strings.ContainsAny(v, " \t") {
-			return fmt.Errorf("branch não pode conter espaços")
-		}
-		return nil
-	})
+	branch, err := ui.Input("Branch", "main", validate.BranchName)
 	if err != nil {
 		return err
 	}
@@ -135,14 +123,14 @@ func runAppsCreate(cmd *cobra.Command, args []string) error {
 	buildPack := validBuildPacks[bpIdx]
 
 	// ── 8. Porta(s) ───────────────────────────────────────────────────────────
-	ports, err := ui.Input("Porta(s) expostas", "3000", validatePorts)
+	ports, err := ui.Input("Porta(s) expostas", "3000", validate.Ports)
 	if err != nil {
 		return err
 	}
 
 	// ── 9. Nome ───────────────────────────────────────────────────────────────
 	defaultName := repo[strings.Index(repo, "/")+1:]
-	name, err := ui.Input("Nome da aplicação", defaultName, nil)
+	name, err := ui.Input("Nome da aplicação", defaultName, validate.ResourceName)
 	if err != nil {
 		return err
 	}
@@ -192,19 +180,6 @@ func runAppsCreate(cmd *cobra.Command, args []string) error {
 	if resp.DeploymentUUID != "" {
 		fmt.Printf("Deploy iniciado:  %s\n", resp.DeploymentUUID)
 		fmt.Printf("\nAcompanhe com: cmx apps logs %s\n", name)
-	}
-	return nil
-}
-
-// validatePorts aceita "3000" ou "3000,3001" — cada parte deve ser 1-65535.
-func validatePorts(v string) error {
-	parts := strings.Split(v, ",")
-	for _, p := range parts {
-		p = strings.TrimSpace(p)
-		n, err := strconv.Atoi(p)
-		if err != nil || n < 1 || n > 65535 {
-			return fmt.Errorf("%q não é uma porta válida (1-65535)", p)
-		}
 	}
 	return nil
 }

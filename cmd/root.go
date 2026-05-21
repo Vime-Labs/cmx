@@ -27,7 +27,8 @@ func Execute() {
 
 // mustClient carrega config e retorna um cliente pronto.
 // Encerra o processo com mensagem amigável se config inválida.
-func mustClient() *api.Client {
+// Retorna api.API para que os comandos dependam da interface, não do concreto.
+func mustClient() api.API {
 	cfg, err := config.Load()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Erro ao carregar config: %v\n", err)
