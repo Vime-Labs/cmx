@@ -34,9 +34,13 @@ func NewClient(baseURL, token string) *Client {
 type APIError struct {
 	StatusCode int
 	Message    string
+	Body       string
 }
 
 func (e *APIError) Error() string {
+	if e.Body != "" && e.Body != e.Message {
+		return fmt.Sprintf("API error %d: %s", e.StatusCode, e.Body)
+	}
 	return fmt.Sprintf("API error %d: %s", e.StatusCode, e.Message)
 }
 
@@ -72,7 +76,7 @@ func (c *Client) do(method, path string, body any) ([]byte, error) {
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		msg := extractErrorMessage(data)
-		return nil, &APIError{StatusCode: resp.StatusCode, Message: msg}
+		return nil, &APIError{StatusCode: resp.StatusCode, Message: msg, Body: string(data)}
 	}
 
 	return data, nil

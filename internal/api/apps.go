@@ -203,12 +203,12 @@ func (c *Client) resolveAppUUID(id string) (string, error) {
 }
 
 func looksLikeUUID(s string) bool {
-	// UUIDs do Coolify têm 8 chars hex sem traço, ex: "a1b2c3d4"
+	// Coolify usa UUIDs em base62 (0-9, a-z, A-Z), ex: "k4rct3now3un3u1x9nlcmcwt"
 	if len(s) < 8 {
 		return false
 	}
 	for _, c := range s {
-		if !((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F') || c == '-') {
+		if !((c >= '0' && c <= '9') || (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '-') {
 			return false
 		}
 	}
