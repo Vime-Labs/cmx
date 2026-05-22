@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/Vime-Labs/cmx/internal/api"
@@ -46,6 +47,35 @@ func isDbsNonInteractive() bool {
 		dbsCreateName != ""
 }
 
+// anyDBFlagSet retorna true se algum flag de criação foi fornecido.
+func anyDBFlagSet() bool {
+	return dbsCreateProject != "" || dbsCreateEnvironment != "" ||
+		dbsCreateServer != "" || dbsCreateType != "" ||
+		dbsCreateName != "" || dbsCreateImage != "" ||
+		dbsCreatePublic || dbsCreatePublicPort != 0
+}
+
+// missingRequiredDBFlags retorna os nomes dos flags obrigatórios que faltam.
+func missingRequiredDBFlags() []string {
+	var missing []string
+	if dbsCreateProject == "" {
+		missing = append(missing, "--project")
+	}
+	if dbsCreateEnvironment == "" {
+		missing = append(missing, "--environment")
+	}
+	if dbsCreateServer == "" {
+		missing = append(missing, "--server")
+	}
+	if dbsCreateType == "" {
+		missing = append(missing, "--type")
+	}
+	if dbsCreateName == "" {
+		missing = append(missing, "--name")
+	}
+	return missing
+}
+
 func runDBsCreate(cmd *cobra.Command, args []string) error {
 	client := mustClient()
 
@@ -66,6 +96,13 @@ func runDBsCreate(cmd *cobra.Command, args []string) error {
 	// ── Modo não-interativo ───────────────────────────────────────────────────
 	if isDbsNonInteractive() {
 		return runDBsCreateNonInteractive(client, projects, servers)
+	}
+
+	// ── Modo parcial: alguns flags fornecidos mas não todos ───────────────────
+	if anyDBFlagSet() {
+		missing := missingRequiredDBFlags()
+		return fmt.Errorf("modo não-interativo requer todos os flags obrigatórios. Faltam: %s",
+			strings.Join(missing, ", "))
 	}
 
 	// ── Modo interativo (wizard) ──────────────────────────────────────────────

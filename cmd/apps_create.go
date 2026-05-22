@@ -47,6 +47,36 @@ func isAppsNonInteractive() bool {
 		appsCreateRepository != ""
 }
 
+// anyAppsFlagSet retorna true se algum flag de criação foi fornecido.
+func anyAppsFlagSet() bool {
+	return appsCreateProject != "" || appsCreateEnvironment != "" ||
+		appsCreateServer != "" || appsCreateGitHubApp != "" ||
+		appsCreateRepository != "" || appsCreateBranch != "" ||
+		appsCreateBuildPack != "" || appsCreatePorts != "" ||
+		appsCreateName != "" || appsCreateDomains != ""
+}
+
+// missingRequiredAppsFlags retorna os nomes dos flags obrigatórios que faltam.
+func missingRequiredAppsFlags() []string {
+	var missing []string
+	if appsCreateProject == "" {
+		missing = append(missing, "--project")
+	}
+	if appsCreateEnvironment == "" {
+		missing = append(missing, "--environment")
+	}
+	if appsCreateServer == "" {
+		missing = append(missing, "--server")
+	}
+	if appsCreateGitHubApp == "" {
+		missing = append(missing, "--github-app")
+	}
+	if appsCreateRepository == "" {
+		missing = append(missing, "--repository")
+	}
+	return missing
+}
+
 func resolveProject(projects []api.Project, id string) (*api.Project, error) {
 	for _, p := range projects {
 		if strings.EqualFold(p.UUID, id) || strings.EqualFold(p.Name, id) {
@@ -110,6 +140,13 @@ func runAppsCreate(cmd *cobra.Command, args []string) error {
 	// ── Modo não-interativo ───────────────────────────────────────────────────
 	if isAppsNonInteractive() {
 		return runAppsCreateNonInteractive(client, projects, servers, ghApps)
+	}
+
+	// ── Modo parcial: alguns flags fornecidos mas não todos ───────────────────
+	if anyAppsFlagSet() {
+		missing := missingRequiredAppsFlags()
+		return fmt.Errorf("modo não-interativo requer todos os flags obrigatórios. Faltam: %s",
+			strings.Join(missing, ", "))
 	}
 
 	// ── Modo interativo (wizard) ──────────────────────────────────────────────
