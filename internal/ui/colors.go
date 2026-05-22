@@ -3,10 +3,24 @@ package ui
 import (
 	"fmt"
 	"os"
+	"runtime"
 	"strings"
 )
 
+// colorsEnabled controla se escapes ANSI são emitidos.
 var colorsEnabled = os.Getenv("NO_COLOR") == "" && os.Getenv("CI") == ""
+
+// useUnicode controla se símbolos Unicode (✓✗→) são usados.
+// No Windows, desligamos por padrão devido a problemas de encoding no PowerShell.
+var useUnicode = func() bool {
+	if os.Getenv("CMX_ASCII") != "" {
+		return false
+	}
+	if runtime.GOOS == "windows" {
+		return false
+	}
+	return true
+}()
 
 const (
 	reset  = "\033[0m"
@@ -51,6 +65,38 @@ func StatusColor(status string) string {
 	}
 }
 
-func Success(msg string) { fmt.Println(Green("✓") + " " + msg) }
-func Fail(msg string)    { fmt.Fprintln(os.Stderr, Red("✗")+" "+msg) }
-func Info(msg string)    { fmt.Println(Gray("→") + " " + msg) }
+func Success(msg string) {
+	prefix := "OK"
+	if useUnicode {
+		prefix = "✓"
+	}
+	if colorsEnabled {
+		fmt.Println(Green(prefix) + " " + msg)
+	} else {
+		fmt.Println(prefix + " " + msg)
+	}
+}
+
+func Fail(msg string) {
+	prefix := "X"
+	if useUnicode {
+		prefix = "✗"
+	}
+	if colorsEnabled {
+		fmt.Fprintln(os.Stderr, Red(prefix)+" "+msg)
+	} else {
+		fmt.Fprintln(os.Stderr, prefix+" "+msg)
+	}
+}
+
+func Info(msg string) {
+	prefix := ">"
+	if useUnicode {
+		prefix = "→"
+	}
+	if colorsEnabled {
+		fmt.Println(Gray(prefix) + " " + msg)
+	} else {
+		fmt.Println(prefix + " " + msg)
+	}
+}

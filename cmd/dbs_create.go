@@ -101,7 +101,7 @@ func runDBsCreate(cmd *cobra.Command, args []string) error {
 	// ── Modo parcial: alguns flags fornecidos mas não todos ───────────────────
 	if anyDBFlagSet() {
 		missing := missingRequiredDBFlags()
-		return fmt.Errorf("modo não-interativo requer todos os flags obrigatórios. Faltam: %s",
+		return fmt.Errorf("modo nao-interativo requer todos os flags obrigatorios. Faltam: %s",
 			strings.Join(missing, ", "))
 	}
 
