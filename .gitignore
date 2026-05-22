@@ -2,3 +2,4 @@ docs/api/
 *.exe
 cmx.exe
 dist/
+nul
