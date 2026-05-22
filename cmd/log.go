@@ -27,11 +27,14 @@ Exemplos:
 	RunE: runLog,
 }
 
-var logClear bool
+var (
+	logClear bool
+	logYes   bool
+)
 
 func runLog(cmd *cobra.Command, args []string) error {
 	if logClear {
-		if !ui.Confirm("Apagar todo o histórico de atividade?") {
+		if !logYes && !ui.Confirm("Apagar todo o histórico de atividade?") {
 			fmt.Println("Cancelado.")
 			return nil
 		}
@@ -105,5 +108,6 @@ func init() {
 	logCmd.Flags().IntVarP(&logN, "n", "n", 20, "Número de entradas a exibir (0 = todas)")
 	logCmd.Flags().StringVar(&logCmdFilter, "cmd", "", "Filtrar por comando (ex: deploy, apps, dbs)")
 	logCmd.Flags().BoolVar(&logClear, "clear", false, "Apagar todo o histórico")
+	logCmd.Flags().BoolVar(&logYes, "yes", false, "Pula confirmação")
 	rootCmd.AddCommand(logCmd)
 }

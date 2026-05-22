@@ -9,6 +9,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var appsDeleteYes bool
+
 var appsDeleteCmd = &cobra.Command{
 	Use:               "delete <uuid|nome>",
 	Short:             "Remove uma aplicação",
@@ -18,7 +20,7 @@ var appsDeleteCmd = &cobra.Command{
 		client := mustClient()
 
 		// Confirmação antes de deletar
-		if !ui.Confirm(fmt.Sprintf("Remover aplicação %q?", args[0])) {
+		if !appsDeleteYes && !ui.Confirm(fmt.Sprintf("Remover aplicação %q?", args[0])) {
 			fmt.Println("Cancelado.")
 			return nil
 		}
@@ -37,5 +39,6 @@ var appsDeleteCmd = &cobra.Command{
 }
 
 func init() {
+	appsDeleteCmd.Flags().BoolVar(&appsDeleteYes, "yes", false, "Pula confirmação")
 	appsCmd.AddCommand(appsDeleteCmd)
 }

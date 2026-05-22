@@ -56,8 +56,10 @@ cmx projects create <nome>         # cria um novo projeto
 cmx apps list                        # lista todas as aplicações
 cmx apps get <uuid|nome>             # detalhes de uma aplicação
 cmx apps create                      # wizard interativo (cria projeto se necessário)
+cmx apps create -p <projeto> -e prod -s <servidor> -g <gh-app> -r owner/repo  # não-interativo
 cmx apps update <uuid|nome> --name "novo-nome"  # atualiza configurações
 cmx apps delete <uuid|nome>          # remove (com confirmação)
+cmx apps delete <uuid|nome> --yes    # remove sem confirmação
 cmx apps deploy <uuid|nome>          # dispara deploy
 cmx apps deploy <uuid|nome> --force  # deploy sem cache
 cmx apps deploy <uuid|nome> --wait   # deploy bloqueante (acompanha até concluir)
@@ -84,8 +86,10 @@ cmx apps envs delete <uuid|nome> CHAVE
 cmx dbs list
 cmx dbs get <uuid|nome>
 cmx dbs create                       # wizard interativo
+cmx dbs create -p <projeto> -e prod -s <servidor> -t postgresql -n meu-db  # não-interativo
 cmx dbs update <uuid|nome> --name "novo-nome"  # atualiza configurações
 cmx dbs delete <uuid|nome>          # remove (com confirmação)
+cmx dbs delete <uuid|nome> --yes    # remove sem confirmação
 cmx dbs start <uuid|nome>
 cmx dbs stop <uuid|nome>
 cmx dbs restart <uuid|nome>
@@ -120,6 +124,7 @@ cmx deployments cancel <uuid>        # cancela deployment ativo
 
 ```sh
 cmx configure                        # wizard interativo
+cmx configure --url <url> --token <token>  # não-interativo (para scripts/IA)
 cmx config get                       # exibe config atual
 cmx config get url                   # exibe apenas a URL
 cmx config get token                 # exibe apenas o token
@@ -161,6 +166,7 @@ cmx log                              # últimas 20 ações
 cmx log -n 50                        # últimas 50 ações
 cmx log --cmd deploy                 # filtrar por comando
 cmx log --clear                      # apagar o histórico
+cmx log --clear --yes                # apagar sem confirmação
 ```
 
 Toda ação executada pela CLI (criar recurso, deploy, start/stop, etc.) é registrada

@@ -17,10 +17,33 @@ var dbTypes = []string{
 	"redis", "dragonfly", "keydb", "clickhouse",
 }
 
+// ── flags ──────────────────────────────────────────────────────────────────────
+var (
+	dbsCreateProject     string
+	dbsCreateEnvironment string
+	dbsCreateServer      string
+	dbsCreateType        string
+	dbsCreateName        string
+	dbsCreateImage       string
+	dbsCreatePublic      bool
+	dbsCreatePublicPort  int
+	dbsCreateYes         bool
+)
+
 var dbsCreateCmd = &cobra.Command{
 	Use:   "create",
 	Short: "Cria um novo banco de dados (wizard interativo)",
 	RunE:  runDBsCreate,
+}
+
+// isDbsNonInteractive retorna true se o usuário forneceu os flags essenciais
+// para criar um banco sem o wizard interativo.
+func isDbsNonInteractive() bool {
+	return dbsCreateProject != "" &&
+		dbsCreateEnvironment != "" &&
+		dbsCreateServer != "" &&
+		dbsCreateType != "" &&
+		dbsCreateName != ""
 }
 
 func runDBsCreate(cmd *cobra.Command, args []string) error {
@@ -39,6 +62,76 @@ func runDBsCreate(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("buscando servidores: %w", err)
 	}
 	spin.Stop("Pronto")
+
+	// ── Modo não-interativo ───────────────────────────────────────────────────
+	if isDbsNonInteractive() {
+		return runDBsCreateNonInteractive(client, projects, servers)
+	}
+
+	// ── Modo interativo (wizard) ──────────────────────────────────────────────
+	return runDBsCreateInteractive(client, projects, servers)
+}
+
+// runDBsCreateNonInteractive cria o banco com os valores fornecidos via flags.
+func runDBsCreateNonInteractive(client api.API, projects []api.Project, servers []api.Server) error {
+	// Resolve project
+	proj, err := resolveProject(projects, dbsCreateProject)
+	if err != nil {
+		return err
+	}
+
+	// Resolve environment within project
+	fullProj, err := client.GetProject(proj.UUID)
+	if err != nil {
+		return fmt.Errorf("buscando ambientes do projeto: %w", err)
+	}
+	env, err := resolveEnvironment(fullProj.Environments, dbsCreateEnvironment)
+	if err != nil {
+		return err
+	}
+
+	// Resolve server
+	srv, err := resolveServer(servers, dbsCreateServer)
+	if err != nil {
+		return err
+	}
+
+	dbType := dbsCreateType
+	name := dbsCreateName
+	image := dbsCreateImage
+	if image == "" {
+		if def, ok := api.DBDefaultImages[dbType]; ok {
+			image = def
+		}
+	}
+	isPublic := dbsCreatePublic
+	publicPort := dbsCreatePublicPort
+
+	start := time.Now()
+	fmt.Print("\nCriando banco de dados... ")
+	resp, err := client.CreateDB(dbType, api.CreateDBRequest{
+		ProjectUUID:     proj.UUID,
+		ServerUUID:      srv.UUID,
+		EnvironmentName: env.Name,
+		Name:            name,
+		Image:           image,
+		IsPublic:        isPublic,
+		PublicPort:      publicPort,
+	})
+	if err != nil {
+		fmt.Println("falhou")
+		logger.Log(logger.ActionDBCreate, logger.ResourceDB, name, err.Error(), "error", time.Since(start))
+		return err
+	}
+	fmt.Println("OK")
+	logger.Log(logger.ActionDBCreate, logger.ResourceDB, name,
+		fmt.Sprintf("UUID: %s", resp.UUID), "success", time.Since(start))
+	fmt.Printf("\nBanco criado: %s\n", resp.UUID)
+	return nil
+}
+
+// runDBsCreateInteractive executa o wizard interativo original.
+func runDBsCreateInteractive(client api.API, projects []api.Project, servers []api.Server) error {
 	fmt.Println()
 
 	if len(projects) == 0 {
@@ -153,7 +246,7 @@ func runDBsCreate(cmd *cobra.Command, args []string) error {
 		{"Público:", publicInfo},
 	})
 
-	if !ui.Confirm("Criar banco de dados?") {
+	if !dbsCreateYes && !ui.Confirm("Criar banco de dados?") {
 		fmt.Println("Cancelado.")
 		return nil
 	}
@@ -184,5 +277,14 @@ func runDBsCreate(cmd *cobra.Command, args []string) error {
 }
 
 func init() {
+	dbsCreateCmd.Flags().StringVarP(&dbsCreateProject, "project", "p", "", "Nome ou UUID do projeto")
+	dbsCreateCmd.Flags().StringVarP(&dbsCreateEnvironment, "environment", "e", "", "Nome do ambiente")
+	dbsCreateCmd.Flags().StringVarP(&dbsCreateServer, "server", "s", "", "Nome ou UUID do servidor")
+	dbsCreateCmd.Flags().StringVarP(&dbsCreateType, "type", "t", "", "Tipo de banco (postgresql, mysql, redis, etc.)")
+	dbsCreateCmd.Flags().StringVarP(&dbsCreateName, "name", "n", "", "Nome do banco")
+	dbsCreateCmd.Flags().StringVar(&dbsCreateImage, "image", "", "Imagem Docker (default conforme o tipo)")
+	dbsCreateCmd.Flags().BoolVar(&dbsCreatePublic, "public", false, "Expor porta publicamente")
+	dbsCreateCmd.Flags().IntVar(&dbsCreatePublicPort, "public-port", 0, "Porta pública")
+	dbsCreateCmd.Flags().BoolVarP(&dbsCreateYes, "yes", "y", false, "Pula confirmação")
 	dbsCmd.AddCommand(dbsCreateCmd)
 }

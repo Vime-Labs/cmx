@@ -9,6 +9,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var dbsDeleteYes bool
+
 var dbsDeleteCmd = &cobra.Command{
 	Use:               "delete <uuid|nome>",
 	Short:             "Remove um banco de dados",
@@ -17,7 +19,7 @@ var dbsDeleteCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		client := mustClient()
 
-		if !ui.Confirm(fmt.Sprintf("Remover banco de dados %q?", args[0])) {
+		if !dbsDeleteYes && !ui.Confirm(fmt.Sprintf("Remover banco de dados %q?", args[0])) {
 			fmt.Println("Cancelado.")
 			return nil
 		}
@@ -36,5 +38,6 @@ var dbsDeleteCmd = &cobra.Command{
 }
 
 func init() {
+	dbsDeleteCmd.Flags().BoolVar(&dbsDeleteYes, "yes", false, "Pula confirmação")
 	dbsCmd.AddCommand(dbsDeleteCmd)
 }
