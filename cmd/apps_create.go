@@ -405,5 +405,11 @@ func init() {
 	appsCreateCmd.Flags().StringVarP(&appsCreateName, "name", "n", "", "Nome da aplicação (default: nome do repo)")
 	appsCreateCmd.Flags().StringVar(&appsCreateDomains, "domains", "", "Domínios")
 	appsCreateCmd.Flags().BoolVarP(&appsCreateYes, "yes", "y", false, "Pula confirmação")
+
+	// Flag completion
+	appsCreateCmd.RegisterFlagCompletionFunc("project", completeProjects)
+	appsCreateCmd.RegisterFlagCompletionFunc("server", completeServers)
+	appsCreateCmd.RegisterFlagCompletionFunc("github-app", completeGitHubApps)
+
 	appsCmd.AddCommand(appsCreateCmd)
 }

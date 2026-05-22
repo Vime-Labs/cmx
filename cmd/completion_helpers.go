@@ -68,3 +68,57 @@ func tryLoadConfig() (*config.Config, error) {
 	}
 	return cfg, nil
 }
+
+// completeProjects completes project names for shell autocomplete.
+func completeProjects(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	cfg, err := tryLoadConfig()
+	if err != nil {
+		return nil, cobra.ShellCompDirectiveNoFileComp
+	}
+	client := api.NewClient(cfg.URL, cfg.Token)
+	projects, err := client.ListProjects()
+	if err != nil {
+		return nil, cobra.ShellCompDirectiveNoFileComp
+	}
+	var names []string
+	for _, p := range projects {
+		names = append(names, fmt.Sprintf("%s\t%s", p.Name, p.UUID))
+	}
+	return names, cobra.ShellCompDirectiveNoFileComp
+}
+
+// completeServers completes server names for shell autocomplete.
+func completeServers(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	cfg, err := tryLoadConfig()
+	if err != nil {
+		return nil, cobra.ShellCompDirectiveNoFileComp
+	}
+	client := api.NewClient(cfg.URL, cfg.Token)
+	servers, err := client.ListServers()
+	if err != nil {
+		return nil, cobra.ShellCompDirectiveNoFileComp
+	}
+	var names []string
+	for _, s := range servers {
+		names = append(names, fmt.Sprintf("%s\t%s - %s", s.Name, s.UUID, s.IP))
+	}
+	return names, cobra.ShellCompDirectiveNoFileComp
+}
+
+// completeGitHubApps completes GitHub App names for shell autocomplete.
+func completeGitHubApps(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	cfg, err := tryLoadConfig()
+	if err != nil {
+		return nil, cobra.ShellCompDirectiveNoFileComp
+	}
+	client := api.NewClient(cfg.URL, cfg.Token)
+	ghApps, err := client.ListGitHubApps()
+	if err != nil {
+		return nil, cobra.ShellCompDirectiveNoFileComp
+	}
+	var names []string
+	for _, g := range ghApps {
+		names = append(names, fmt.Sprintf("%s\t%s", g.Name, g.UUID))
+	}
+	return names, cobra.ShellCompDirectiveNoFileComp
+}

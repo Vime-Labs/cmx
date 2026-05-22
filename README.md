@@ -50,6 +50,15 @@ cmx projects get <uuid>            # detalhes de um projeto
 cmx projects create <nome>         # cria um novo projeto
 ```
 
+### Sources / GitHub Apps
+
+```sh
+cmx sources list                   # lista GitHub Apps configurados
+cmx sources list -o json           # em JSON (UUID + nome)
+```
+
+Use o UUID ou nome listado aqui no `--github-app` do `cmx apps create`.
+
 ### Aplicações
 
 ```sh

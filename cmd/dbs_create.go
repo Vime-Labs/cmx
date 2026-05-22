@@ -323,5 +323,10 @@ func init() {
 	dbsCreateCmd.Flags().BoolVar(&dbsCreatePublic, "public", false, "Expor porta publicamente")
 	dbsCreateCmd.Flags().IntVar(&dbsCreatePublicPort, "public-port", 0, "Porta pública")
 	dbsCreateCmd.Flags().BoolVarP(&dbsCreateYes, "yes", "y", false, "Pula confirmação")
+
+	// Flag completion
+	dbsCreateCmd.RegisterFlagCompletionFunc("project", completeProjects)
+	dbsCreateCmd.RegisterFlagCompletionFunc("server", completeServers)
+
 	dbsCmd.AddCommand(dbsCreateCmd)
 }
