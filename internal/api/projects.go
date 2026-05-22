@@ -31,3 +31,15 @@ func (c *Client) GetProject(uuid string) (*Project, error) {
 	}
 	return &p, nil
 }
+
+func (c *Client) CreateProject(name string) (*Project, error) {
+	data, err := c.Post("/projects", map[string]string{"name": name})
+	if err != nil {
+		return nil, err
+	}
+	p, err := decode[Project](data)
+	if err != nil {
+		return nil, err
+	}
+	return &p, nil
+}

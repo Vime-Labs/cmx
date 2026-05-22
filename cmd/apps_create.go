@@ -44,16 +44,25 @@ func runAppsCreate(cmd *cobra.Command, args []string) error {
 	fmt.Println()
 
 	if len(projects) == 0 {
-		return fmt.Errorf("nenhum projeto encontrado — crie um projeto no painel Coolify primeiro")
+		fmt.Println("Nenhum projeto encontrado.")
+		if !ui.Confirm("Criar um novo projeto?") {
+			return fmt.Errorf("é necessário um projeto para criar a aplicação")
+		}
+		name, err := ui.Input("Nome do projeto", "meu-projeto", nil)
+		if err != nil {
+			return err
+		}
+		proj, err := client.CreateProject(name)
+		if err != nil {
+			return fmt.Errorf("criando projeto: %w", err)
+		}
+		projects = []api.Project{*proj}
 	}
 	if len(servers) == 0 {
 		return fmt.Errorf("nenhum servidor encontrado — adicione um servidor no painel Coolify primeiro")
 	}
 	if len(ghApps) == 0 {
 		return fmt.Errorf("nenhum GitHub App configurado — adicione um em: Configurações → GitHub Apps")
-	}
-	if len(projects) == 0 {
-		return fmt.Errorf("nenhum projeto encontrado — crie um projeto no painel Coolify primeiro")
 	}
 	projNames := make([]string, len(projects))
 	for i, p := range projects {

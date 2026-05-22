@@ -37,6 +37,7 @@ type API interface {
 	// Projetos e infraestrutura
 	ListProjects() ([]Project, error)
 	GetProject(uuid string) (*Project, error)
+	CreateProject(name string) (*Project, error)
 	ListServers() ([]Server, error)
 	ListGitHubApps() ([]GitHubApp, error)
 

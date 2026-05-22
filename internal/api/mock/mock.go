@@ -44,6 +44,7 @@ type Client struct {
 
 	ListProjectsFunc   func() ([]api.Project, error)
 	GetProjectFunc     func(uuid string) (*api.Project, error)
+	CreateProjectFunc  func(name string) (*api.Project, error)
 	ListServersFunc    func() ([]api.Server, error)
 	ListGitHubAppsFunc func() ([]api.GitHubApp, error)
 
@@ -230,6 +231,13 @@ func (m *Client) ListProjects() ([]api.Project, error) {
 func (m *Client) GetProject(uuid string) (*api.Project, error) {
 	if m.GetProjectFunc != nil {
 		return m.GetProjectFunc(uuid)
+	}
+	return &api.Project{}, nil
+}
+
+func (m *Client) CreateProject(name string) (*api.Project, error) {
+	if m.CreateProjectFunc != nil {
+		return m.CreateProjectFunc(name)
 	}
 	return &api.Project{}, nil
 }

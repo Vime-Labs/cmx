@@ -42,12 +42,20 @@ export CMX_TOKEN=seu-token
 
 ## Uso
 
+### Projetos
+
+```sh
+cmx projects list                  # lista todos os projetos
+cmx projects get <uuid>            # detalhes de um projeto
+cmx projects create <nome>         # cria um novo projeto
+```
+
 ### Aplicações
 
 ```sh
 cmx apps list                        # lista todas as aplicações
 cmx apps get <uuid|nome>             # detalhes de uma aplicação
-cmx apps create                      # wizard interativo
+cmx apps create                      # wizard interativo (cria projeto se necessário)
 cmx apps update <uuid|nome> --name "novo-nome"  # atualiza configurações
 cmx apps delete <uuid|nome>          # remove (com confirmação)
 cmx apps deploy <uuid|nome>          # dispara deploy
