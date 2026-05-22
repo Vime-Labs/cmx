@@ -17,6 +17,11 @@ type Database struct {
 	PublicPort  int    `json:"public_port"`
 	CreatedAt   string `json:"created_at"`
 	UpdatedAt   string `json:"updated_at"`
+	// Credenciais (retornadas pela API no GET detalhado)
+	InternalDBURL string `json:"internal_db_url,omitempty"`
+	Password      string `json:"password,omitempty"`
+	Username      string `json:"username,omitempty"`
+	DefaultDB     string `json:"default_database,omitempty"`
 }
 
 // DisplayType normaliza o tipo retornado pela API para exibição.
@@ -100,6 +105,7 @@ type CreateDBRequest struct {
 	EnvironmentName string `json:"environment_name"`
 	Name            string `json:"name,omitempty"`
 	Image           string `json:"image,omitempty"`
+	Password        string `json:"password,omitempty"`
 	IsPublic        bool   `json:"is_public,omitempty"`
 	PublicPort      int    `json:"public_port,omitempty"`
 }

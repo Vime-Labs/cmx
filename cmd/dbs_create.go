@@ -26,6 +26,7 @@ var (
 	dbsCreateType        string
 	dbsCreateName        string
 	dbsCreateImage       string
+	dbsCreatePassword    string
 	dbsCreatePublic      bool
 	dbsCreatePublicPort  int
 	dbsCreateYes         bool
@@ -152,6 +153,7 @@ func runDBsCreateNonInteractive(client api.API, projects []api.Project, servers 
 		EnvironmentName: env.Name,
 		Name:            name,
 		Image:           image,
+		Password:        dbsCreatePassword,
 		IsPublic:        isPublic,
 		PublicPort:      publicPort,
 	})
@@ -320,6 +322,7 @@ func init() {
 	dbsCreateCmd.Flags().StringVarP(&dbsCreateType, "type", "t", "", "Tipo de banco (postgresql, mysql, redis, etc.)")
 	dbsCreateCmd.Flags().StringVarP(&dbsCreateName, "name", "n", "", "Nome do banco")
 	dbsCreateCmd.Flags().StringVar(&dbsCreateImage, "image", "", "Imagem Docker (default conforme o tipo)")
+	dbsCreateCmd.Flags().StringVar(&dbsCreatePassword, "password", "", "Senha do banco (opcional; gerada automaticamente se omitida)")
 	dbsCreateCmd.Flags().BoolVar(&dbsCreatePublic, "public", false, "Expor porta publicamente")
 	dbsCreateCmd.Flags().IntVar(&dbsCreatePublicPort, "public-port", 0, "Porta pública")
 	dbsCreateCmd.Flags().BoolVarP(&dbsCreateYes, "yes", "y", false, "Pula confirmação")

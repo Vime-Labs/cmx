@@ -58,6 +58,8 @@ var dbsListCmd = &cobra.Command{
 	},
 }
 
+var dbsGetShowPassword bool
+
 // ── get ─────────────────────────────────────────────────────────────────────
 
 var dbsGetCmd = &cobra.Command{
@@ -93,6 +95,12 @@ var dbsGetCmd = &cobra.Command{
 		kv.AddRow(ui.Bold("Público:"), public)
 		kv.AddRow(ui.Bold("Criado em:"), db.CreatedAt)
 		kv.AddRow(ui.Bold("Atualizado:"), db.UpdatedAt)
+		if dbsGetShowPassword {
+			kv.AddRow(ui.Bold("Usuário:"), db.Username)
+			kv.AddRow(ui.Bold("Senha:"), ui.Yellow(db.Password))
+			kv.AddRow(ui.Bold("Database:"), db.DefaultDB)
+			kv.AddRow(ui.Bold("Internal URL:"), ui.Cyan(db.InternalDBURL))
+		}
 		kv.Render()
 		return nil
 	},
@@ -158,5 +166,6 @@ func dbActionCmd(action, spinMsg string) func(*cobra.Command, []string) error {
 
 func init() {
 	dbsCmd.AddCommand(dbsListCmd, dbsGetCmd, dbsStartCmd, dbsStopCmd, dbsRestartCmd)
+	dbsGetCmd.Flags().BoolVar(&dbsGetShowPassword, "show-password", false, "Exibe credenciais do banco")
 	rootCmd.AddCommand(dbsCmd)
 }

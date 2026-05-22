@@ -94,8 +94,9 @@ cmx apps envs delete <uuid|nome> CHAVE
 ```sh
 cmx dbs list
 cmx dbs get <uuid|nome>
+cmx dbs get <uuid|nome> --show-password   # exibe credenciais (senha, URL interna)
 cmx dbs create                       # wizard interativo
-cmx dbs create -p <projeto> -e prod -s <servidor> -t postgresql -n meu-db  # não-interativo
+cmx dbs create -p <projeto> -e prod -s <servidor> -t postgresql -n meu-db --password "Minha@Senha"  # não-interativo
 cmx dbs update <uuid|nome> --name "novo-nome"  # atualiza configurações
 cmx dbs delete <uuid|nome>          # remove (com confirmação)
 cmx dbs delete <uuid|nome> --yes    # remove sem confirmação
@@ -104,6 +105,15 @@ cmx dbs stop <uuid|nome>
 cmx dbs restart <uuid|nome>
 cmx dbs backup <uuid|nome>           # dispara backup
 ```
+
+### Aplicações — link automático com banco
+
+```sh
+cmx apps create -p <projeto> -e prod -s <servidor> -g <gh-app> -r owner/repo --link-db meu-banco --yes
+```
+
+Após criar a aplicação, o CMX busca as credenciais do banco e configura
+a variável `DATABASE_URL` automaticamente na aplicação recém-criada.
 
 ### Domínios
 

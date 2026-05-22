@@ -26,6 +26,7 @@ var (
 	appsCreatePorts       string
 	appsCreateName        string
 	appsCreateDomains     string
+	appsCreateLinkDB      string
 	appsCreateYes         bool
 )
 
@@ -229,6 +230,11 @@ func runAppsCreateNonInteractive(client api.API, projects []api.Project, servers
 	if resp.DeploymentUUID != "" {
 		fmt.Printf("Deploy iniciado:  %s\n", resp.DeploymentUUID)
 	}
+
+	if appsCreateLinkDB != "" {
+		linkDB(client, name, appsCreateLinkDB)
+	}
+
 	return nil
 }
 
@@ -390,7 +396,30 @@ func runAppsCreateInteractive(client api.API, projects []api.Project, servers []
 		fmt.Printf("Deploy iniciado:  %s\n", resp.DeploymentUUID)
 		fmt.Printf("\nAcompanhe com: cmx apps logs %s\n", name)
 	}
+
+	if appsCreateLinkDB != "" {
+		linkDB(client, name, appsCreateLinkDB)
+	}
+
 	return nil
+}
+
+func linkDB(client api.API, appName, dbID string) {
+	db, err := client.GetDB(dbID)
+	if err != nil {
+		ui.Fail(fmt.Sprintf("erro ao buscar banco linkado: %v", err))
+		return
+	}
+	if db.InternalDBURL == "" {
+		ui.Info("Banco linkado, mas InternalDBURL vazia — verifique as credenciais com cmx dbs get --show-password")
+		return
+	}
+	spin2 := ui.NewSpinner("Configurando DATABASE_URL")
+	if err := client.SetAppEnv(appName, "DATABASE_URL", db.InternalDBURL); err != nil {
+		spin2.Fail(fmt.Sprintf("erro ao configurar DATABASE_URL: %v", err))
+	} else {
+		spin2.Stop(fmt.Sprintf("DATABASE_URL configurada a partir de %s", dbID))
+	}
 }
 
 func init() {
@@ -405,6 +434,7 @@ func init() {
 	appsCreateCmd.Flags().StringVarP(&appsCreateName, "name", "n", "", "Nome da aplicação (default: nome do repo)")
 	appsCreateCmd.Flags().StringVar(&appsCreateDomains, "domains", "", "Domínios")
 	appsCreateCmd.Flags().BoolVarP(&appsCreateYes, "yes", "y", false, "Pula confirmação")
+	appsCreateCmd.Flags().StringVar(&appsCreateLinkDB, "link-db", "", "UUID ou nome do banco para configurar DATABASE_URL automaticamente")
 
 	// Flag completion
 	appsCreateCmd.RegisterFlagCompletionFunc("project", completeProjects)
